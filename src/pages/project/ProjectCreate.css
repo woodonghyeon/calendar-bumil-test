@@ -1,0 +1,225 @@
+/* 전체 페이지 */
+.project-create-app-body {
+  width: 100%;
+  max-width: 768px;
+  min-height: 100%; /* 전체 화면 높이 차지 */
+  background: white;
+  justify-content: center;
+  margin: auto;
+}
+
+/* 사이드바 고정 */
+.project-create-sidebar {
+  flex-shrink: 0;
+}
+
+/* 메인 컨텐츠 (사이드바 옆에 위치) */
+.project-create-main {
+  flex-grow: 1;
+  width: 100%;
+  margin: auto;
+  padding: 20px;
+  overflow-y: auto; /* 🌟 내용이 많으면 스크롤 가능 */
+}
+
+/* ✅ 프로젝트 생성 페이지 컨테이너 */
+.project-create-container {
+  width: 100%; /* 전체 너비 */
+  max-width: 768px; /* 최대 너비 설정 */
+  background: white; /* 배경색 */
+  border-radius: 8px; /* 모서리 둥글게 */
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  padding: 8px; /* 내부 여백 */
+  box-sizing: border-box;
+}
+
+/* ✅ 제목 스타일 */
+.project-create-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-top: 50px;
+  margin-bottom: 40px;
+  text-align: center;
+  color: #333;
+}
+
+/* ✅ 에러 메시지 */
+.project-create-error-message {
+  color: red;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* ✅ 입력 필드와 라벨을 가로로 정렬 */
+.project-create-form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+/* ✅ 라벨 스타일 */
+.project-create-form-row label {
+  width: 140px;
+  font-weight: bold;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+/* ✅ 입력 필드 스타일 */
+.project-create-form input,
+.project-create-form select,
+.project-create-form textarea {
+  flex: 1;
+  width: 95%;
+  max-width: 768px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* ✅ 사업 기간 입력 바 전체를 한 줄에 배치 */
+.project-create-form-row.date-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+/* ✅ 라벨 스타일 (다른 입력 필드와 동일) */
+.project-create-form-row.date-row label {
+  width: 160px;
+  font-weight: bold;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+/* ✅ 날짜 입력 필드와 구분 기호 컨테이너 */
+.project-create-date-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1; /* 다른 입력 필드와 동일한 너비 */
+  box-sizing: border-box;
+}
+
+/* ✅ 시작일과 종료일 입력 필드 */
+.project-create-date-container input {
+  flex: 1; /* 같은 크기로 배치 */
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  min-width: 0; /* 최소 너비 제한 해제 */
+  text-align: center;
+}
+
+/* ✅ 날짜 구분 기호 (~) */
+.project-create-date-separator {
+  padding: 0 10px;
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+/* ✅ 버튼 컨테이너 */
+.project-create-button-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ✅ 버튼 공통 스타일 */
+.project-create-save-button,
+.project-create-cancel-button {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+/* ✅ 프로젝트 생성 버튼 (파란색) */
+.project-create-save-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.project-create-save-button:hover {
+  background-color: #0056b3;
+}
+
+/* ✅ 취소 버튼 (빨간색) */
+.project-create-cancel-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.project-create-cancel-button:hover {
+  background-color: #b02a37;
+}
+
+/* ✅ 반응형 */
+@media screen and (max-width: 768px) {
+  .project-create-container {
+    max-width: 100%;
+  }
+
+  .project-create-form-row {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .project-create-form-row label {
+    width: 140px;
+  }
+
+  .project-create-form-row.date-row {
+    flex-direction: row; /* 한 줄 유지 */
+    align-items: center;
+  }
+
+  .project-create-date-container {
+    flex-direction: row;
+    gap: 5px;
+  }
+
+  .project-create-date-container input {
+    width: auto;
+    flex: 1;
+  }
+
+  .project-create-date-separator {
+    display: block;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .project-create-form-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .project-create-form-row label {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+
+  .project-create-form-row select {
+    width: 100%;
+  }
+
+  .project-create-date-container input {
+    width: 100%;
+  }
+}

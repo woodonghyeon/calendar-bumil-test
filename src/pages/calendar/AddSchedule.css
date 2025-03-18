@@ -1,0 +1,188 @@
+/* ✅ 전체 페이지 스타일 */
+.add-schedule-body {
+  font-family: "Noto Sans KR", sans-serif; /* 기본 글꼴 설정 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 768px;
+  min-height: 100vh; /* 화면 전체 높이 사용 */
+  overflow-y: auto; /* 내용이 많아질 경우 스크롤 가능하도록 설정 */
+}
+
+/* ✅ 일정 추가 페이지 컨테이너 */
+.add-schedule {
+  background-color: white; /* 배경 흰색 */
+  padding: 30px 40px; /* 내부 여백 */
+  border-radius: 12px; /* 모서리를 둥글게 */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25); /* 그림자 효과 */
+  width: 100%;
+  max-width: 768px; /* 최대 너비 지정 */
+  text-align: center;
+  transition: box-shadow 0.3s ease; /* 마우스 오버 시 부드러운 효과 */
+}
+
+/* ✅ 컨테이너 마우스 오버 시 그림자 효과 */
+.add-schedule:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ✅ 제목 스타일 */
+.add-schedule__title {
+  font-size: 2em; /* 제목 크기 */
+  margin-bottom: 25px; /* 아래 여백 */
+  color: #333; /* 글자 색상 */
+  font-weight: 600; /* 글자 굵기 */
+}
+
+/* ✅ 날짜 입력 필드 라벨 */
+.add-schedule__date-label {
+  font-size: 1.1em;
+  font-weight: 500;
+  color: #555;
+  display: block;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+/* 📌 시작 날짜와 종료 날짜 한 줄에 반반 배치 */
+.add-schedule__date-container {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px; /* 두 필드 사이 여백 */
+}
+
+/* ✅ 날짜 입력 필드 컨테이너 */
+.add-schedule__date-field {
+  flex: 1; /* 두 날짜 필드를 동일한 크기로 설정 */
+}
+
+/* 📌 모든 input과 select의 크기 통일 */
+.add-schedule__input,
+.add-schedule__select,
+.add-schedule__date-input {
+  width: 100%; /* 모든 입력 필드를 동일한 너비로 설정 */
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1em;
+  background-color: #f9f9f9;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box; /* 박스 크기 조정 */
+}
+
+/* ✅ 입력 필드 선택 시 테두리 색 변경 */
+.add-schedule__input:focus,
+.add-schedule__select:focus,
+.add-schedule__date-input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* ✅ 날짜 입력 필드의 캘린더 아이콘 스타일 */
+.add-schedule__date-input::-webkit-calendar-picker-indicator {
+  color: #666;
+}
+
+/* ✅ 드롭다운 화살표 커스텀 */
+.add-schedule__select {
+  background-image: url('data:image/svg+xml;utf8,<svg fill="#666" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position-x: calc(100% - 10px);
+  background-position-y: center;
+  background-size: 20px;
+  padding-right: 30px;
+}
+
+/* ✅ 버튼 컨테이너 */
+.add-schedule__button-container {
+  display: flex;
+  justify-content: center;
+  gap: 5%;
+  margin-top: 5%;
+}
+
+/* ✅ 일정 추가 및 돌아가기 버튼 스타일 */
+.add-schedule__button,
+.add-schedule__button--back {
+  width: 100%;
+  background-color: #007bff; /* 기본 파란색 */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+}
+
+/* ✅ 버튼 호버 시 색상 변경 */
+.add-schedule__button:hover,
+.add-schedule__button--back:hover {
+  background-color: #0056b3;
+}
+
+/* ✅ 돌아가기 버튼은 회색 */
+.add-schedule__button--back {
+  background-color: #6c757d;
+}
+
+.add-schedule__button--back:hover {
+  background-color: #5a6268;
+}
+
+/* ✅ 일정 입력 필드 */
+.add-schedule__todo-input {
+  width: calc(100% - 24px);
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1em;
+  background-color: #f9f9f9;
+  transition: border-color 0.3s ease;
+}
+
+/* 📌 반응형 디자인 추가 */
+@media (max-width: 768px) {
+  .add-schedule {
+    padding: 20px;
+    width: 90%;
+  }
+
+  .add-schedule__title {
+    font-size: 1.8em;
+  }
+
+  /* 📌 화면이 작아질 경우 날짜 입력 필드 줄 바꿈 */
+  .add-schedule__date-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .add-schedule__date-input,
+  .add-schedule__select {
+    width: 100%;
+  }
+
+  .add-schedule__button,
+  .add-schedule__button--back {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .add-schedule__todo-input {
+    width: calc(100% - 24px);
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 1em;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease;
+  }
+}

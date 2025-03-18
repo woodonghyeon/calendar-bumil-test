@@ -1,0 +1,107 @@
+.changepw-body {
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  margin: auto;
+  margin-top: 50px;
+}
+
+.changepw-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  width: 350px;
+}
+
+.changepw-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333333;
+}
+
+.form-group-changepw {
+  margin-bottom: 20px;
+}
+
+.form-group-changepw label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #555555;
+}
+
+.form-group-changepw input {
+  width: 91%;
+  padding: 12px;
+  font-size: 14px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+}
+
+.form-group-changepw select {
+  width: 98%;
+  padding: 12px;
+  font-size: 14px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+}
+
+.form-group-changepw input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.changepw-button-container {
+  display: flex;
+  width: 98%;
+  justify-content: space-between;
+}
+
+.changepw-button {
+  text-align: center;
+  width: 45%;
+  padding: 15px;
+  font-size: 16px;
+  color: #ffffff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.cancle-button {
+  text-align: center;
+  width: 45%;
+  padding: 15px;
+  font-size: 16px;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  background-color: #6c757d;
+}
+
+.changepw-button:hover {
+  background-color: #0056b3;
+}
+
+.cancle-button:hover {
+  background-color: #5a6268;
+}
+
+.message {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+  color: red;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}

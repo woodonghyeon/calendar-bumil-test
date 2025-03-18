@@ -1,0 +1,512 @@
+/* Calendar.css */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+body {
+  font-family: "Poppins", sans-serif;
+}
+.calendar-page {
+  display: flex;
+  font-family: "Noto Sans KR", sans-serif;
+  flex-direction: column; /* 모든 요소가 세로로 배치되도록 변경 */
+}
+
+.calendar-parent {
+  display: flex;
+  justify-content: center; /* 가로 정렬 */
+  align-items: center; /* 세로 정렬 */
+}
+
+.calendar {
+  margin-top: 4px;
+  width: 100vw; /* 뷰포트를 넘어서지 않도록 설정 */
+  max-width: 768px;
+  padding: 10px; /* margin 대신 padding 사용 */
+  background-color: #fff;
+  position: relative;
+  overflow-x: hidden; /* 가로 스크롤 방지 */
+}
+
+.calendar-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px; /* 상단 여백을 줄여 상태 변경 UI가 겹치지 않도록 설정 */
+  position: sticky;
+  top: 0;
+  background-color: white;
+}
+
+.calendar-navigation .nav-button {
+  border: none;
+  font-size: 1em; /* Increased size for better visibility */
+  cursor: pointer;
+  border-radius: 10%;
+  color: black; /* Changed to black */
+  padding: 5px 10px 2px 10px;
+  transition: color 0.3s ease;
+}
+
+.calendar-navigation .nav-button:hover {
+  color: #ffffff;
+  background-color: #007bff;
+}
+
+.calendar-title {
+  font-size: 1.3em;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+}
+
+.calendar-days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+  margin-top: 20px; /* 캘린더 제목과 상태 변경 UI 사이에 여백 추가 */
+}
+
+.day-header {
+  text-align: center;
+  font-weight: bold;
+  color: #777;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  /* gap: 5px; */
+}
+
+.calendar-day {
+  position: relative;
+  /* padding: 10px; */
+  /* border-radius: 5px; */
+  /* background-color: #f9f9f9; */
+  height: 70px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.calendar-day .status-circle {
+  display: none;
+}
+
+.calendar-day.active {
+  /* background-color: #ffffff; */
+  border: 1px solid #eee;
+}
+
+.calendar-day:hover {
+  background-color: #f0f0f0;
+}
+
+/* 오늘 날짜 스타일 */
+.calendar-day.today {
+  background-color: #7ed893; /* 초록색 */
+  color: white; /* 글자색은 흰색 */
+  font-weight: bold;
+}
+
+/* 선택된 날짜 스타일 */
+.calendar-day.selected {
+  background-color: #fccc89; /* 오렌지 색으로 선택된 날짜 강조 */
+  color: white;
+  font-weight: bold;
+}
+
+.calendar-day:nth-child(7n) {
+  color: blue;
+}
+
+.calendar-day:nth-child(7n + 1) {
+  color: red;
+}
+.calendar-day .day-number {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  font-size: 15px; /* 작은 크기로 조정 */
+  /* font-weight: bold; */
+  z-index: 1;
+}
+.schedule-area {
+  margin-top: 20px;
+  padding: 15px;
+  border-top: 1px solid #eee;
+}
+
+.selected-date-info {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.selected-date-info h3 {
+  font-size: 1.2em;
+  color: #333;
+  margin-bottom: 0;
+}
+
+.add-schedule-container {
+  display: flex;
+  justify-content: center; /* Centers the button horizontally */
+  margin-bottom: 15px;
+}
+
+.button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+.schedule-section {
+  margin-bottom: 20px;
+}
+
+.schedule-section h4 {
+  font-size: 1.1em;
+  color: #555;
+  margin-bottom: 10px;
+  white-space: nowrap;
+}
+
+.schedule-section-inner {
+  display: "flex";
+  justify-content: "space-between";
+  align-items: "center";
+  width: "100%";
+}
+
+.schedule-list {
+  padding: 0;
+  list-style: none;
+}
+
+/* ✅ 일정 박스 내부 왼쪽 상단에 이름 고정 */
+.schedule-user-name {
+  font-size: 10px;
+  color: #888;
+  position: absolute;
+  top: 3px;
+  left: 10px;
+  font-weight: bold;
+}
+
+/* 일정 내용이 박스를 넘어갈 경우 ... 처리 및 툴팁 적용 */
+.schedule-task {
+  font-size: 16px;
+  font-weight: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+  max-width: calc(100% - 70px);
+}
+
+/* 일정 항목 */
+.schedule-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: #f0f8ff;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  color: #333;
+  white-space: nowrap;
+}
+
+/* 버튼 공간이 필요한 경우 */
+.schedule-item.has-buttons .schedule-content {
+  padding-right: 50px;
+}
+
+/* 버튼 공간이 필요 없는 경우 */
+.schedule-item.no-buttons .schedule-content {
+  padding-right: 0px;
+}
+
+/* 버튼이 없으면 버튼 그룹 공간 없애기 */
+.schedule-item.no-buttons .button-group {
+  display: none;
+}
+
+.schedule-content {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding-right: 50px; /* 수정 및 삭제 버튼 공간 확보 */
+}
+
+.schedule-item .schedule-content {
+  display: flex;
+  align-items: center; /* 수직 정렬 */
+  justify-content: flex-start; /* 좌측 정렬 */
+  width: 100%; /* 일정 항목이 부모 요소를 꽉 채우도록 설정 */
+}
+
+.schedule-item:hover {
+  background-color: #e0f7fa;
+}
+
+.schedule-item.other-user-schedule {
+  background-color: #fff8e1;
+}
+
+.empty-schedule {
+  color: #999;
+  font-style: italic;
+}
+
+.status-circle {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.schedule-container {
+  display: flex;
+  width: 100%;
+  align-items: center; /* 수직 정렬 */
+}
+
+/* 상태 아이콘 */
+.schedule-item .status-icon {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: gray; /* 기본값은 회색 */
+  margin-right: 10px; /* 상태 아이콘과 텍스트 사이에 공백 추가 */
+  flex-shrink: 0; /* 상태 아이콘이 찌그러지지 않도록 고정 크기 유지 */
+}
+
+.schedule-item .task-name,
+.schedule-item .task-name-two {
+  flex-grow: 1;
+  font-size: 1em;
+  padding-top: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 상태별 색상 */
+.schedule-item .status-icon.red {
+  background-color: red; /* 준비 중 */
+}
+
+.schedule-item .status-icon.green {
+  background-color: green; /* 진행 중 */
+}
+
+.schedule-item .status-icon.lightblue {
+  background-color: #30aee0; /* 완료 */
+}
+
+.button-group {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 5px;
+  z-index: 10;
+}
+
+.icon-button {
+  padding: 3px; /* 버튼 간격 조정 */
+  background: transparent;
+  border: none;
+}
+
+.icon-button:hover {
+  background: transparent;
+  color: inherit;
+}
+
+/* 수정 버튼 아이콘 */
+.edit-button {
+  color: #8fbc8f; /* 연한 초록색 계열 */
+}
+
+.edit-button:hover {
+  color: #239e5b; /* 마우스 오버 시 조금 더 진한 초록색 */
+}
+
+.delete-button {
+  color: #fa8072; /* 기존 삭제버튼 색상 유지 */
+}
+
+.delete-button:hover {
+  color: #e75b5b; /* 마우스 오버 시 조금 더 진한 빨간색 */
+}
+
+/* 아이콘 크기 조정 */
+.icon-button svg {
+  font-size: 1.2em; /* 아이콘 크기 조정 */
+}
+
+/* 사용자 상태 변경 UI */
+.user-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  /* margin: 0 37px 20px 45px; */
+  padding: 10px 20px 10px 45px;
+  /* padding: 10px; */
+  background-color: #f4f4f4;
+  border-radius: 8px;
+}
+
+.user-info {
+  font-size: 1em;
+  padding-left: 5px;
+  font-weight: bold;
+}
+
+.status-container {
+  display: flex;
+  align-items: center;
+}
+
+.status-container label {
+  margin-right: 10px;
+}
+
+.status-container select {
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+}
+
+/* 챗봇 토글 버튼 스타일 */
+.toggle-chatbot-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #4caf50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 999;
+}
+
+/* 부서별 보기 버튼 스타일 */
+.department-view-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 7px 14px; /* 패딩을 조금 줄여 크기를 줄임 */
+  cursor: pointer;
+  font-size: 1em; /* 글자 크기도 조금 줄임 */
+  transition: background-color 0.3s ease;
+  margin-left: 10px;
+  align-self: center;
+}
+
+.department-view-button:hover {
+  background-color: #0056b3;
+}
+
+.department-view-dropdown {
+  display: flex;
+  margin-top: 10px;
+  clear: both;
+  width: 100%;
+  padding: 0.5em;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+  cursor: pointer;
+  background-color: #f8f9fa;
+}
+
+.department-view-dropdown:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.has-schedule {
+  background-color: #fff1c1; /* 배경색을 빨간색으로 설정 */
+  /* font-weight: bold; */
+}
+
+.day-has-schedule {
+  position: absolute;
+  bottom: 35px; /* 날짜 하단에 배치 */
+  width: 100%;
+  height: 8px; /* 세로로 쌓일 공간 조정 */
+  background-color: #007bff;
+}
+
+.day-has-other-schedule {
+  position: absolute;
+  bottom: 25px; /* 날짜 하단에 배치 */
+  width: 100%;
+  height: 8px; /* 세로로 쌓일 공간 조정 */
+  background-color: #fb5050;
+}
+
+.color-check {
+  margin-top: 5px;
+  width: 120px;
+}
+
+.red-tag {
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  width: 27px;
+  height: 8px;
+  background-color: #fb5050;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 5px;
+  /* align-items: center;  
+  justify-content: center;   */
+}
+
+.blue-tag {
+  font-size: 13px;
+  width: 27px;
+  height: 8px;
+  background-color: #007bff;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 5px;
+  /* align-items: center;  
+  justify-content: center;    */
+}
+.blue-text {
+  font-size: 11px;
+  margin-left: 5px;
+}
+.red-text {
+  font-size: 11px;
+  margin-left: 5px;
+}

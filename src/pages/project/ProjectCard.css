@@ -1,0 +1,78 @@
+/* ✅ 프로젝트 카드 스타일 */
+.project-card {
+  background-color: #f9fafb;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 5px;
+  font-weight: bold;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  height: 90%;
+}
+
+.project-card:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* ✅ 프로젝트 헤더 스타일 */
+.project-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+/* ✅ 프로젝트 제목 스타일 */
+.project-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-left: 0px;
+}
+
+/* ✅ 프로젝트 상태 스타일 */
+.project-status {
+  font-size: 0.8em;
+  font-weight: bold;
+  padding: 6px 14px;
+  border-radius: 20px;
+  text-align: center;
+  min-width: 80px;
+  display: inline-block;
+  border: 1px solid transparent;
+  margin-top: auto;
+}
+
+/* ✅ 프로젝트 정보 스타일 */
+.project-code,
+.project-group,
+.project-owner,
+.project-pm,
+.project-period {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 5px;
+}
+
+/* ✅ 상태별 스타일 */
+.status-제안 {
+  background-color: #fde8d6; /* 밝은 살구색 */
+  color: #b95d00; /* 부드러운 다크 오렌지 */
+  border-color: #ff9800; /* 진한 오렌지 */
+}
+
+.status-수행 {
+  background-color: #d6e6fd; /* 연한 스카이 블루 */
+  color: #0b60b0; /* 진한 네이비 블루 */
+  border-color: #2196f3; /* 선명한 블루 */
+}
+
+.status-실주종료 {
+  background-color: #d8f3dc; /* 밝은 민트 그린 */
+  color: #1b4332; /* 딥 그린 */
+  border-color: #4caf50; /* 선명한 녹색 */
+}

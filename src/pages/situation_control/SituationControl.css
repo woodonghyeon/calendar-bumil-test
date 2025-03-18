@@ -1,0 +1,377 @@
+/* 전체 페이지 */
+.SituationControl-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  margin: auto;
+  max-width: 768px;
+  height: 100%;
+  padding: 20px;
+}
+
+.title {
+  font-size: 1.8em;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  color: #333;
+}
+
+/* ✅ 검색 컨테이너 */
+.SituationControl-search-container {
+  display: flex;
+  flex-direction: column; /* 세로로 배치 */
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  margin-bottom: 15px;
+  max-width: 768px;
+  width: 100%;
+}
+
+.autocomplete-project-list,
+.autocomplete-user-list {
+  position: absolute; /* input 바로 아래에 위치하도록 */
+  top: 100%; /* input 바로 아래에 배치 */
+  left: 0;
+  width: 80%; /* input과 동일한 너비 */
+  background-color: white;
+  border: 1px solid #ccc;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 999; /* 다른 요소들 위로 표시되도록 */
+}
+
+.autocomplete-project-list li,
+.autocomplete-user-list li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.autocomplete-project-list li:hover,
+.autocomplete-user-list li:hover {
+  background-color: #f0f0f0;
+}
+
+.search-project-container {
+  display: flex;
+  align-items: center; /* 세로 중앙 정렬 */
+  gap: 10px; /* 요소 간격 조정 */
+  width: 100%; /* 전체적인 크기 유지 */
+  max-width: 768px;
+  position: relative; /* autocomplete-list가 이 영역 안에서 위치하도록 설정 */
+}
+
+.search-project-category {
+  flex: 0 0 auto; /* 크기 고정 */
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+  font-size: 16px; /* 글자 크기 조정 */
+  margin: 0; /* 여백 제거 */
+  padding-right: 10px; /* 오른쪽 간격 추가 */
+}
+
+.selected-projects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* 아이템들 사이에 간격 추가 */
+}
+
+.selected-project-box {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f0f0f0; /* 배경색 */
+  border: 1px solid #ccc; /* 테두리 */
+  border-radius: 4px; /* 모서리 둥글게 */
+  font-size: 14px;
+  position: relative;
+}
+
+.project-name {
+  margin-right: 20px; /* 'X' 버튼과 이름 사이 간격 */
+}
+
+.remove-project {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #e74c3c; /* 'X' 색상 */
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.remove-project:hover {
+  color: #c0392b; /* 'X' 버튼 hover 효과 */
+}
+
+.search-user-container {
+  display: flex;
+  align-items: center; /* 세로 중앙 정렬 */
+  gap: 10px; /* 요소 간격 조정 */
+  width: 100%; /* 전체적인 크기 유지 */
+  max-width: 768px;
+  position: relative; /* autocomplete-list가 이 영역 안에서 위치하도록 설정 */
+}
+
+.search-user-category {
+  flex: 0 0 auto; /* 크기 고정 */
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+  font-size: 16px; /* 글자 크기 조정 */
+  margin: 0; /* 여백 제거 */
+  padding-right: 10px; /* 오른쪽 간격 추가 */
+}
+
+.selected-users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* 아이템들 사이에 간격 추가 */
+}
+
+.selected-user-box {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f0f0f0; /* 배경색 */
+  border: 1px solid #ccc; /* 테두리 */
+  border-radius: 4px; /* 모서리 둥글게 */
+  font-size: 14px;
+  position: relative;
+}
+
+.user-name {
+  margin-right: 20px; /* 'X' 버튼과 이름 사이 간격 */
+}
+
+.remove-user {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #e74c3c; /* 'X' 색상 */
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.remove-user:hover {
+  color: #c0392b; /* 'X' 버튼 hover 효과 */
+}
+
+/* ✅ 검색 기준 선택 드롭다운 */
+.SituationControl-search-category {
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+/* ✅ 검색 입력 필드 */
+.SituationControl-search-input {
+  flex-grow: 1;
+  height: 40px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1em;
+  box-sizing: border-box;
+}
+
+.SituationControl-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 0; /* 왼쪽 정렬 */
+  margin-right: 0; /* 오른쪽 여백 제거 */
+  width: 100%; /* 너비를 100%로 설정 */
+}
+
+/* 정보 스타일 */
+.SituationControl-details p {
+  font-size: 1em;
+  margin: 8px 0;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.SituationControl-details p strong {
+  margin-left: 8px;
+  color: #007bff;
+}
+
+.icon {
+  margin-right: 8px;
+  color: #007bff;
+  font-size: 1.2em;
+}
+
+/* 상태 아이콘 */
+.status-icon {
+  margin-right: 8px;
+  font-size: 1em;
+}
+
+/* 온라인 상태 */
+.online {
+  color: #28a745;
+}
+
+/* 오프라인 상태 */
+.offline {
+  color: #6c757d;
+}
+
+/* 프로젝트 섹션 스타일 */
+.SituationControl-projects {
+  flex-grow: 1;
+  width: 100%; /* 부모 요소의 너비를 채우도록 설정 */
+  margin-top: 10px;
+}
+
+/* 프로젝트 테이블 스타일 */
+.project-user-table {
+  table-layout: fixed; /* 각 열의 너비를 고정 */
+  width: 100%; /* 테이블 너비를 100%로 설정 */
+  border-collapse: collapse; /* 테이블 경계선 겹침 방지 */
+  margin-top: 20px; /* 테이블 상단 여백 */
+}
+
+.project-user-table th,
+.project-user-table td {
+  width: 8.33%; /* 12개월 기준으로 균등 분배 */
+  overflow: hidden; /* 넘치는 내용 그냥 가려지도록 설정 */
+  white-space: nowrap; /* 한 줄로 표시 */
+  border: 1px solid #ddd; /* 테이블 셀 경계선 */
+  padding: 12px; /* 테이블 셀 패딩 */
+  width: 8.33%; /* 열 너비를 고정 */
+}
+
+.project-user-table th {
+  background-color: #f2f2f2; /* 테이블 헤더 배경색 */
+  color: #333; /* 테이블 헤더 텍스트 색상 */
+}
+
+.project-user-table td {
+  background-color: #fff; /* 테이블 셀 배경색 */
+  color: #333; /* 테이블 셀 텍스트 색상 */
+}
+
+/* 연도 선택 바 */
+.year-selector {
+  display: flex;
+  justify-content: space-between; /* 버튼 양 끝 정렬 */
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.year-button {
+  background-color: grey;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  font-size: 1em;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.year-button:hover {
+  background-color: #0056b3;
+}
+
+.year-text {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+}
+.project-cell {
+  text-align: center !important; /* 강제 적용 */
+  vertical-align: middle; /* 세로 중앙 정렬 */
+}
+
+.project-chart {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.project-chart-row {
+  margin-bottom: 10px; /* 프로젝트 간의 간격 */
+}
+
+.project-chart-title {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.project-chart-months {
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid #ddd; /* 상단 경계선 */
+  border-bottom: 1px solid #ddd; /* 하단 경계선 */
+}
+
+.project-chart-user-name {
+  flex: 2;
+  text-align: center;
+  font-weight: bold;
+  padding: 10px;
+  border-right: 1px solid #ddd; /* 사용자별로 구분하는 선 */
+}
+
+.project-month {
+  flex: 1; /* 각 월이 고르게 차지하도록 설정 */
+  text-align: center;
+  line-height: 30px;
+  font-size: 1em;
+  border-left: 1px solid #ddd; /* 각 월을 구분하는 선 */
+}
+
+.highlighted {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .project-user-table {
+    width: 100%; /* 작은 화면에서 테이블 너비를 100%로 설정 */
+  }
+  .project-user-table th,
+  .project-user-table td {
+    padding: 8px; /* 작은 화면에서 셀 패딩 조정 */
+  }
+}
+
+/* 반응형 스타일 */
+@media (max-width: 350px) {
+  .SituationControl-container {
+    width: 100%;
+    height: auto;
+    padding-bottom: 20px;
+  }
+
+  .SituationControl-content {
+    padding: 20px;
+  }
+}
+
+.filter-button {
+  background-color: #007bff;
+  color: #fff;
+  width: 100%;
+  height: 100%;
+  max-width: 40px;
+  max-height: 40px;
+  border-radius: 3px;
+  border: none;
+  padding: 10px;
+}

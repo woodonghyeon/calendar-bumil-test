@@ -1,0 +1,129 @@
+.notice-detail-container {
+  max-width: 768px;
+  width: 100%;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin: auto;
+  margin-top: 50px;
+  overflow-x: hidden; /* 추가: 가로 스크롤 방지 */
+  box-sizing: border-box; /* 추가: padding이 width에 포함되도록 설정 */
+}
+.notice-detail-notice {
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.notice-detail-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.notice-detail-meta {
+  font-size: 14px;
+  color: gray;
+  text-align: right;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.notice-detail-date {
+  color: #777;
+  margin-bottom: 5px;
+}
+
+.notice-detail-content {
+  padding-top: 15px;
+  font-size: 16px;
+  line-height: 1.6;
+  white-space: pre-line;
+  margin-bottom: 20px;
+  padding-bottom: 50px;
+  border-bottom: 1px solid #ddd;
+
+  /* 긴 단어가 넘치지 않도록 처리 */
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.notice-detail-comments {
+  font-size: 14px;
+  color: gray;
+}
+
+.notice-detail-content {
+  font-family: sans-serif; /* 기본 폰트 설정 */
+}
+
+/* Quill 폰트 스타일 */
+.notice-detail-content .ql-font-serif {
+  font-family: serif;
+}
+.notice-detail-content .ql-font-monospace {
+  font-family: monospace;
+}
+
+/* 글씨 크기 */
+.notice-detail-content .ql-size-small {
+  font-size: 12px;
+}
+.notice-detail-content .ql-size-normal {
+  font-size: 16px;
+}
+.notice-detail-content .ql-size-large {
+  font-size: 24px;
+}
+.notice-detail-content .ql-size-huge {
+  font-size: 32px;
+}
+
+/* 정렬 */
+.notice-detail-content .ql-align-right {
+  text-align: right;
+}
+.notice-detail-content .ql-align-center {
+  text-align: center;
+}
+
+.notice-edit-button {
+  margin: 20px; /* 바깥 여백 */
+  margin-left: 0px; /* 왼쪽 여백 */
+  background-color: #007bff; /* 배경색 (밝은 빨간색) */
+  color: white; /* 글자 색상 */
+  border: none; /* 테두리 없음 */
+  border-radius: 5px; /* 모서리 둥글게 */
+  padding: 10px 20px; /* 내부 여백 */
+  cursor: pointer; /* 마우스 커서 변경 */
+  font-size: 1em; /* 폰트 크기 */
+  transition: background-color 0.3s ease; /* 부드러운 색상 전환 */
+}
+.notice-delete-button {
+  margin: 20px; /* 바깥 여백 */
+  margin-left: 0px; /* 왼쪽 여백 */
+  background-color: #ff5a5a; /* 배경색 (밝은 빨간색) */
+  color: white; /* 글자 색상 */
+  border: none; /* 테두리 없음 */
+  border-radius: 5px; /* 모서리 둥글게 */
+  padding: 10px 20px; /* 내부 여백 */
+  cursor: pointer; /* 마우스 커서 변경 */
+  font-size: 1em; /* 폰트 크기 */
+  transition: background-color 0.3s ease; /* 부드러운 색상 전환 */
+}
+
+@media (min-width: 1048px) {
+  .notice-detail-container h1 {
+    font-size: 30px;
+  }
+  .notice-detail-notice {
+    margin-left: 0px;
+  }
+}
+
+@media (max-width: 768px) {
+  .notice-detail-container {
+    margin-top: 50px;
+  }
+}

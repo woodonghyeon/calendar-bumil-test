@@ -1,0 +1,30 @@
+.scroll-top-container {
+    position: sticky; /* 🔥 fixed-header 아래 따라오게 설정 */
+    top: 80px; /* 📌 fixed-header 아래 여백 설정 */
+    display: flex;
+    justify-content: flex-start;
+    padding: 10px;
+}
+
+.scroll-to-top-button {
+    position: fixed;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* 🎯 가로, 세로 정중앙 위치 */
+    width: 50px;
+    height: 50px;
+    background-color: rgba(50, 50, 50, 0.5); 
+    color: white;
+    font-size: 20px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.scroll-to-top-button.show {
+    display: flex;
+}

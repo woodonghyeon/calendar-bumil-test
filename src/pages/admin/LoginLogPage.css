@@ -1,0 +1,138 @@
+/* 전체 페이지 스타일 */
+.login-log-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+  min-height: 100vh;
+}
+
+/* 콘텐츠 박스 */
+.login-log-box {
+  box-sizing: border-box;
+  background-color: white;
+  border-radius: 10px;
+  width: 100%;
+  margin: 20px auto;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+}
+
+/* 타이틀 */
+.title {
+  font-size: 1.8em;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* 검색 필터 스타일 */
+.login-log-search-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.login-log-search-dropdown {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1em;
+  width: 30%;
+}
+
+.login-log-search-input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1em;
+  width: 100%;
+}
+
+.login-log-search-dropdown {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+/* 인덱스 바 (헤더) */
+.login-log-header {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1.5fr;
+  background: #eaeaea;
+  padding: 12px;
+  font-weight: bold;
+  border-bottom: 2px solid #ddd;
+  text-align: center;
+}
+
+/* 로그인 로그 리스트 */
+.login-log-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* 로그인 로그 리스트 */
+.login-log-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  background-color: #ffffff;
+  transition: background-color 0.2s ease;
+  text-align: center;
+  font-size: 14px;
+}
+
+.login-log-item:hover {
+  background-color: #f0f0f0;
+}
+
+.login-log-column {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.login-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px; /* 모바일에서 적당한 크기 */
+  display: inline-block;
+  cursor: pointer; /* 마우스 올리면 클릭 가능하도록 */
+}
+
+.login-time {
+  white-space: normal;
+}
+
+/* 페이지네이션 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-size: 16px;
+  font-weight: bold;
+}

@@ -1,0 +1,150 @@
+/* ✅ 로그인 페이지 기본 스타일 */
+.login-page {
+  font-family: Arial, sans-serif; /* 기본 글꼴 설정 */
+  background-color: #ffffff; /* 배경색 - 흰색 */
+  display: flex; /* 플렉스 박스 사용 */
+  justify-content: center; /* 수평 중앙 정렬 */
+  align-items: center; /* 수직 중앙 정렬 */
+  height: 100vh; /* 화면 전체 높이 설정 */
+}
+
+/* ✅ 로그인 컨테이너 (로그인 폼을 감싸는 박스) */
+.login-container {
+  padding: 20px 30px; /* 내부 여백 */
+  border-radius: 8px; /* 모서리 둥글게 */
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */ /* (주석 처리됨) 그림자 효과 */
+  width: 300px; /* 컨테이너 너비 지정 */
+  flex-direction: column; /* 내부 요소 세로 정렬 */
+  align-items: center;
+  justify-content: center;
+}
+
+/* ✅ 로그인 제목 스타일 */
+.login-container h2 {
+  text-align: center; /* 텍스트 중앙 정렬 */
+  margin-bottom: 20px; /* 제목 아래 여백 */
+  color: #333333; /* 글씨 색상 - 어두운 회색 */
+}
+
+/* ✅ 입력 필드 (아이디, 비밀번호) 그룹 */
+.form-group {
+  margin-bottom: 15px; /* 아래 여백 */
+}
+
+/* ✅ 입력 필드 라벨 스타일 */
+.form-group label {
+  display: block; /* 블록 요소로 변경 (줄 바꿈) */
+  margin-bottom: 5px; /* 아래 여백 */
+  font-size: 14px; /* 폰트 크기 */
+  color: #555555; /* 글씨 색상 - 중간 회색 */
+}
+
+/* ✅ 입력 필드 스타일 */
+.form-group input {
+  width: 93%; /* 입력 필드 너비 */
+  padding: 10px; /* 내부 여백 */
+  font-size: 14px; /* 폰트 크기 */
+  border: 1px solid #cccccc; /* 테두리 색상 - 연한 회색 */
+  border-radius: 4px; /* 모서리 둥글게 */
+}
+
+/* ✅ 입력 필드 포커스(선택) 시 스타일 */
+.form-group input:focus {
+  outline: none; /* 기본 아웃라인 제거 */
+  border-color: #007bff; /* 테두리 색상 - 파란색 */
+}
+
+/* ✅ 로그인 버튼 스타일 */
+.login-button {
+  width: 100%; /* 전체 너비 */
+  padding: 10px; /* 내부 여백 */
+  font-size: 16px; /* 폰트 크기 */
+  color: #ffffff; /* 글씨 색상 - 흰색 */
+  background-color: #007bff; /* 배경색 - 파란색 */
+  border: none; /* 테두리 없음 */
+  border-radius: 4px; /* 모서리 둥글게 */
+  cursor: pointer; /* 마우스 커서를 손가락 모양으로 변경 */
+}
+
+/* ✅ 로그인 버튼 호버(마우스 올릴 때) 스타일 */
+.login-button:hover {
+  background-color: #0056b3; /* 어두운 파란색 */
+}
+
+/* ✅ 로그인 페이지 하단 문구 스타일 */
+.footer {
+  text-align: center; /* 중앙 정렬 */
+  margin-top: 15px; /* 위쪽 여백 */
+  font-size: 12px; /* 폰트 크기 */
+  color: #777777; /* 글씨 색상 - 연한 회색 */
+}
+
+/* ✅ 하단 링크 스타일 */
+.footer a {
+  color: #007bff; /* 링크 색상 - 파란색 */
+}
+
+/* ✅ 아이디 저장 및 자동 로그인 체크박스 컨테이너 */
+.checkbox-container {
+  display: flex; /* 플렉스 박스 사용 */
+  justify-content: space-between; /* 두 개의 체크박스를 양 끝으로 배치 */
+  align-items: center; /* 수직 중앙 정렬 */
+  gap: 20px; /* 두 체크박스 간 간격 */
+  margin-bottom: 15px; /* 아래 여백 */
+}
+
+/* ✅ 개별 체크박스 스타일 */
+.checkbox-container .form-group {
+  display: flex; /* 플렉스 박스 사용 */
+  align-items: center; /* 수직 중앙 정렬 */
+  gap: 8px; /* 아이콘과 텍스트 간 간격 */
+  flex: 1; /* 부모 컨테이너에서 동일한 비율로 차지 */
+}
+
+/* ✅ 체크박스 라벨 스타일 */
+.checkbox-container .form-group label {
+  font-size: 14px; /* 폰트 크기 */
+  color: #555555; /* 글씨 색상 - 중간 회색 */
+  cursor: pointer; /* 클릭 가능한 요소로 변경 */
+}
+
+/* ✅ 체크박스 기본 스타일 */
+.checkbox-container .form-group input[type="checkbox"] {
+  appearance: none; /* 기본 체크박스 스타일 제거 */
+  width: 20px; /* 체크박스 크기 */
+  height: 20px; /* 체크박스 크기 */
+  padding: 0; /* 내부 여백 없음 */
+  border: 2px solid #cccccc; /* 테두리 색상 - 연한 회색 */
+  border-radius: 4px; /* 모서리 둥글게 */
+  outline: none; /* 기본 아웃라인 제거 */
+  cursor: pointer; /* 마우스 커서를 손가락 모양으로 변경 */
+  transition: all 0.3s ease; /* 부드러운 전환 효과 */
+  display: flex; /* 아이콘을 중앙 배치하기 위해 flex 사용 */
+  align-items: center;
+  justify-content: center;
+}
+
+/* ✅ 체크박스 선택 시 스타일 */
+.checkbox-container .form-group input[type="checkbox"]:checked {
+  background-color: #007bff; /* 배경색 - 파란색 */
+  border-color: #007bff; /* 테두리 색상 - 파란색 */
+}
+
+/* ✅ 체크박스 체크된 상태에서 ✔ 아이콘 추가 */
+.checkbox-container .form-group input[type="checkbox"]:checked::before {
+  content: "✔"; /* 체크 아이콘 */
+  font-size: 14px; /* 아이콘 크기 */
+  color: #ffffff; /* 아이콘 색상 - 흰색 */
+}
+
+/* ✅ 체크박스에 마우스를 올릴 때 테두리 색 변경 */
+.checkbox-container .form-group:hover input[type="checkbox"] {
+  border-color: #007bff; /* 테두리 색상 - 파란색 */
+}
+
+/* E-mail, Password 필수 표시 (*) */
+.required {
+  color: red;
+  font-weight: bold;
+  margin-left: 3px;
+}

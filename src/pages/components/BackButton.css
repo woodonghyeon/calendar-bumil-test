@@ -1,0 +1,29 @@
+/* BackButton 컴포넌트 전용 스타일 */
+.back-button-container {
+    position: relative; /* 부모 요소 기준으로 컴포넌트 위치를 조정할 경우 */
+}
+
+/* 뒤로가기 버튼 */
+.back-button {
+    position: fixed; /* 스크롤 시에도 고정 */
+    bottom: 20px; /* 화면 아래에서 20px */
+    right: 20px; /* 화면 오른쪽에서 20px */
+    width: 50px; /* 버튼 크기 */
+    height: 50px; /* 버튼 크기 */
+    background-color: #007bff; /* 파란색 배경 */
+    color: white; /* 흰색 텍스트 */
+    border: none; /* 테두리 제거 */
+    border-radius: 50%; /* 동그란 버튼 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+    cursor: pointer; /* 클릭 가능 커서 */
+    font-size: 20px; /* 텍스트 크기 */
+    display: flex; /* 중앙 정렬 */
+    justify-content: center; /* 수평 가운데 정렬 */
+    align-items: center; /* 수직 가운데 정렬 */
+    z-index: 1000; /* 다른 요소 위에 고정 */
+    transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: #0056b3; /* 호버 시 어두운 파란색 */
+}

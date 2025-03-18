@@ -1,0 +1,289 @@
+/* ✅ 전체 페이지 컨테이너 */
+.project-page-app-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 768px;
+  min-height: 100vh;
+  padding-bottom: 10px;
+  background-color: #f8f9fa;
+  justify-content: center;
+  margin: auto;
+}
+
+/* ✅ 프로젝트 목록 영역 */
+.project-page-content {
+  width: 100%;
+  max-width: 768px;
+  /* padding: 20px; */
+  /* padding-left: 20px; */
+}
+
+/* ✅ 프로젝트 카드 컨테이너 */
+.project-page-box {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ 필터 컨테이너 */
+.project-page-filter-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+/* ✅ 날짜 필터 스타일 */
+.project-page-date-filter {
+  flex-grow: 1;
+  padding: 6px;
+  font-size: 14px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  text-align: center;
+  min-width: 120px;
+}
+
+/* ✅ 날짜 구분선 (~) */
+.project-page-date-separator {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* ✅ 검색 버튼 */
+.project-page-filter-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.project-page-filter-button:hover {
+  background-color: #0056b3;
+}
+
+/* ✅ 토글 버튼 컨테이너 */
+.project-page-status-toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  max-width: 768px;
+  width: 100%;
+}
+
+/* ✅ 개별 토글 버튼 */
+.project-page-status-toggle {
+  flex-grow: 1;
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: white;
+  transition: all 0.2s ease-in-out;
+  min-width: 90px;
+  text-align: center;
+}
+
+.project-page-status-toggle.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #0056b3;
+}
+
+/* ✅ 검색 컨테이너 */
+.project-page-search-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  margin-bottom: 15px;
+  max-width: 768px;
+  width: 100%;
+}
+
+/* ✅ 검색 기준 선택 드롭다운 */
+.project-page-search-category {
+  padding: 10px;
+  flex-shrink: 3;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* ✅ 검색 입력 필드 */
+.project-page-search-input {
+  flex-grow: 1;
+  flex-shrink: 1;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: left;
+  margin-bottom: 0;
+}
+
+/* ✅ 반응형 처리: 갤럭시 폴드 (~280px) */
+@media screen and (max-width: 280px) {
+  .project-page-content,
+  .project-page-box {
+    max-width: 100%;
+    padding: 15px;
+  }
+
+  /* 📌 280px 이하에서는 세로 정렬 */
+  .project-page-filter-container,
+  .project-page-status-toggle-container,
+  .project-page-search-container {
+    flex-direction: column;
+    max-width: 100%;
+  }
+
+  .project-page-date-filter,
+  .project-page-search-input,
+  .project-page-search-category {
+    width: 80%;
+  }
+
+  .project-page-status-toggle {
+    width: 100%;
+  }
+
+  .project-page-filter-button {
+    width: 100%;
+  }
+
+  .project-page-sidebar {
+    flex-shrink: 0;
+  }
+}
+
+/* ✅ 반응형 처리: 폭이 415px 이하일 때 검색 입력 필드 너비 조정 */
+@media screen and (max-width: 415px) {
+  .project-page-search-container {
+    flex-wrap: wrap; /* 요소가 넘칠 경우 줄바꿈 가능하도록 설정 */
+    justify-content: center; /* 중앙 정렬 */
+    gap: 4px;
+  }
+
+  .project-page-search-category {
+    min-width: 100px; /* 드롭다운 최소 크기 유지 */
+  }
+
+  .project-page-search-input {
+    flex-grow: unset; /* 기존 `flex-grow` 제거 */
+    width: 60%; /* 줄어든 너비 설정 */
+    min-width: 120px; /* 너무 좁아지는 것 방지 */
+  }
+
+  .project-page-filter-button {
+    width: 30px;
+  }
+
+  .project-page-sidebar {
+    flex-shrink: 0;
+  }
+}
+
+/* ✅ 반응형 처리: 아이폰 13 (~390px) */
+@media screen and (max-width: 390px) {
+  .project-page-content,
+  .project-page-box {
+    max-width: 100%;
+  }
+
+  /* ✅ 390px 이하에서도 가로 배치 유지 */
+  .project-page-search-container,
+  .project-page-filter-container,
+  .project-page-status-toggle-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .project-page-status-toggle {
+    font-size: 12px;
+    flex-grow: 1;
+  }
+
+  .project-page-filter-button {
+    width: 40px;
+  }
+
+  .project-page-date-filter,
+  .project-page-search-input,
+  .project-page-search-category {
+    width: auto;
+    min-width: 100px;
+  }
+
+  .project-page-sidebar {
+    flex-shrink: 0;
+  }
+}
+
+/* ✅ 고정 헤더 스타일 */
+.project-page-fixed-header {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  /* 배경색 */
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* 그림자 효과 */
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+/* ✅ 타이틀 스타일 */
+.project-page-fixed-header .title {
+  align-items: center;
+  margin: 0;
+  padding: 10px 0;
+  font-size: 20px;
+  text-align: center;
+}
+
+/* 중앙 정렬 */
+.project-page-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 40px;
+  text-align: center;
+  color: #333;
+}
+
+/* ✅ 검색 필터 컨테이너 */
+.project-page-search-container,
+.project-page-filter-container,
+.project-page-status-toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+  padding: 5px 0;
+  flex-wrap: nowrap;
+
+  /* 각 컨테이너를 중앙으로 정렬 */
+  margin-left: auto;
+  margin-right: auto;
+}

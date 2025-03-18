@@ -1,0 +1,387 @@
+/* 부서 관리 전체 컨테이너 */
+.department-management {
+  width: 100%;
+  max-width: 768px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  box-sizing: border-box;
+  margin: auto;
+  padding: 20px;
+  overflow-x: auto;
+  background-color: white;
+}
+
+/* 제목 스타일 */
+.department-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* 테이블과 부서 추가 부분을 감싸는 컨테이너 (부모) */
+.department-container,
+.add-department {
+  width: 100%;
+  justify-content: center;
+  margin: auto; /* 가운데 정렬 */
+}
+
+/* 테이블을 감싸는 컨테이너 */
+.department-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* 부서 목록 테이블 */
+.department-table {
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed; /* 테이블 크기 자동 확장 방지 */
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background: white;
+}
+
+/* 부서 목록 테이블 셀 스타일 */
+.department-table th,
+.department-table td {
+  padding: 12px;
+  border: 1px solid #ddd;
+  text-align: center;
+  word-wrap: break-word; /* 긴 텍스트 자동 줄바꿈 */
+  overflow-wrap: break-word;
+  white-space: normal; /* 텍스트 줄바꿈 가능하도록 설정 */
+}
+
+/* 부서 ID 왼쪽 정렬 */
+.department-table td:first-child {
+  text-align: left;
+}
+
+/* 관리 버튼 그룹 (수정 & 삭제) */
+.department-table td:last-child {
+  justify-content: center; /* 가운데 정렬 */
+  align-items: center;
+  gap: 10px; /* 버튼 간격 */
+  flex-wrap: wrap; /* 버튼이 길어질 경우 줄 바꿈 */
+}
+
+.department-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+  color: #333;
+}
+
+.department-table tr {
+  border: none;
+}
+
+.department-table tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.department-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* 📌 부서 항목 */
+.department-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.department-item span {
+  font-size: 14px;
+  color: #555;
+}
+
+/* 버튼 스타일 */
+.department-edit-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.department-edit-button:hover {
+  background-color: #2980b9;
+}
+
+.department-delete-button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.department-delete-button:hover {
+  background-color: #c0392b;
+}
+
+.department-table td .department-edit-button,
+.department-table td .department-delete-button {
+  margin: 0 5px;
+}
+
+.department-edit-button,
+.department-delete-button {
+  min-width: 60px; /* 버튼 크기 통일 */
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  flex: none;
+}
+
+/* 부서 추가 섹션 */
+.add-department {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 768px; /* 테이블과 동일한 너비 설정 */
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin: 0 auto; /* 가운데 정렬 */
+}
+
+.add-department h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* 부서 추가 입력 필드 */
+.add-department input {
+  width: 100%; /* 테이블과 동일한 크기로 설정 */
+  box-sizing: border-box; /* 패딩을 포함한 크기 조정 */
+  padding: 10px;
+  margin: 8px 0;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  outline: none;
+}
+
+.add-department input:focus {
+  border-color: #3498db;
+}
+
+/* 버튼 */
+.department-add-button {
+  background-color: #2ecc71;
+  color: white;
+  padding: 10px 20px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+  width: 100%; /* 테이블과 동일한 크기로 설정 */
+}
+
+.department-add-button:hover {
+  background-color: #27ae60;
+}
+
+/* 수정 모달 스타일 */
+.department-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  max-width: 90vw; /* 모바일에서도 화면을 넘어가지 않도록 */
+  max-height: 80vh; /* 내용이 길 경우 내부 스크롤 추가 */
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 모달 드래그 영역 (타이틀 바 역할) */
+.modal-header {
+  padding: 10px;
+  font-size: 1.2em;
+  font-weight: bold;
+  border-radius: 6px 6px 0 0;
+  text-align: center;
+}
+
+/* 모달 닫기 버튼 */
+.department-modal .close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.department-modal h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* 모달 입력 필드 스타일 */
+.department-modal input {
+  width: calc(100% - 20px);
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  outline: none;
+}
+
+.department-modal input:focus {
+  border-color: #3498db;
+}
+
+.department-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 999;
+}
+
+/* 버튼 컨테이너 (저장 & 취소) */
+.department-modal .department-button-container {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+/* 버튼 너비를 반반 */
+.department-save-button,
+.department-cancel-button {
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* 저장 버튼 */
+.department-save-button {
+  background-color: #3498db;
+  color: white;
+  border-radius: 5px;
+}
+
+.department-save-button:hover {
+  background-color: #2980b9;
+}
+
+/* 취소 버튼 */
+.department-cancel-button {
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 5px;
+}
+
+.department-cancel-button:hover {
+  background-color: #c0392b;
+}
+
+/* 모바일에서 테이블이 깨지지 않도록 조정 */
+@media screen and (max-width: 768px) {
+  .department-table {
+    display: block;
+    width: 100%;
+  }
+
+  /* 테이블 헤더 숨기기 */
+  .department-table thead {
+    display: none;
+  }
+
+  /* 테이블 본문을 블록 형태로 변경 */
+  .department-table tbody {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .department-table tr {
+    flex-direction: column;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+    padding: 10px;
+  }
+
+  /* 각 셀을 개별 블록으로 변경 */
+  .department-table td {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    text-align: left;
+    border: none;
+    word-break: break-word;
+  }
+
+  /* 긴 텍스트 자동 줄바꿈 */
+  .department-table td:first-child {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+  }
+
+  /* 각 셀 앞에 열 제목 추가 */
+  .department-table td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: #555;
+    display: inline-block;
+    min-width: 100px;
+  }
+
+  /* 관리 버튼 그룹 정렬 */
+  .department-table td:last-child {
+    justify-content: center; /* 모바일에서도 중앙 정렬 */
+    flex-direction: row; /* 버튼을 가로로 정렬 */
+  }
+
+  .department-edit-button,
+  .department-delete-button {
+    width: 70px; /* 모바일에서 버튼 크기 통일 */
+  }
+
+  .department-modal {
+    width: 80%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+}

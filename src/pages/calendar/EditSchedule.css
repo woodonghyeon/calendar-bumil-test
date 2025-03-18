@@ -1,0 +1,133 @@
+.edit-body {
+  font-family: "Noto Sans KR", sans-serif;
+  display: flex;
+  max-width: 768px;
+  min-height: 100vh;
+  overflow-y: auto;
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+}
+
+.edit-schedule {
+  background-color: white;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 768px;
+  text-align: center;
+  transition: box-shadow 0.3s ease;
+}
+
+.edit-schedule:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+}
+
+.edit-schedule__title {
+  font-size: 2em;
+  margin-bottom: 25px;
+  color: #333;
+  font-weight: 600;
+}
+
+/* 공통 입력 필드 스타일 */
+.edit-schedule__form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.edit-schedule__field {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.edit-schedule__label {
+  font-size: 1.1em;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+/* 모든 input과 select 크기 통일 */
+.edit-schedule__input,
+.edit-schedule__select {
+  width: 100%; /* 전체 너비 사용 */
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1em;
+  background-color: #f9f9f9;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.edit-schedule__input:focus,
+.edit-schedule__select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* 버튼 스타일 */
+.edit-schedule__button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.edit-schedule__button {
+  width: 48%;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+}
+
+.edit-schedule__button:hover {
+  background-color: #0056b3;
+}
+
+.edit-schedule__button--back {
+  background-color: #6c757d;
+}
+
+.edit-schedule__button--back:hover {
+  background-color: #5a6268;
+}
+
+/* 반응형 디자인 추가 */
+@media (max-width: 768px) {
+  .edit-schedule {
+    padding: 20px;
+    width: 85%;
+  }
+
+  .edit-schedule__title {
+    font-size: 1.8em;
+  }
+
+  .edit-schedule__form {
+    gap: 15px;
+  }
+
+  .edit-schedule__input,
+  .edit-schedule__select {
+    font-size: 1em;
+  }
+
+  .edit-schedule__button-container {
+    gap: 5%;
+    flex-direction: row;
+  }
+
+  .edit-schedule__button,
+  .edit-schedule__button--back {
+    width: 100%;
+  }
+}

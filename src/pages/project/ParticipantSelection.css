@@ -1,0 +1,164 @@
+/* ✅ 참여자 선택 영역 */
+.participant-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  max-width: 768px;
+}
+
+/* ✅ 참여자 선택 바  */
+.react-select-container {
+  flex-grow: 1;
+}
+
+/* ✅ 참여자 추가 버튼 */
+.confirm-button {
+  display: flex;
+  background-color: #10c966;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 12px;
+  cursor: pointer;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  transition: background-color 0.2s ease-in-out;
+  text-align: center;
+}
+
+.add-button:hover {
+  background-color: #0fa85a;
+}
+
+/* ✅ 참여자 목록 스타일 */
+.participant-list {
+  margin-top: 8px;
+  list-style: none;
+  padding: 0;
+}
+
+/* ✅ 참여자 리스트 아이템 */
+.participant-list li {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  gap: 10px;
+}
+
+/* ✅ 왼쪽: 이름(부서) */
+.participant-info {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* 너무 길면 ... 처리 */
+  min-width: 150px;
+  /* 최소 너비 설정 */
+  max-width: 250px;
+  /* 최대 너비 제한 */
+}
+
+/* ✅ 오른쪽: 투입기간 + 삭제 버튼 */
+.participant-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 요소 간 일정한 간격 유지 */
+  min-width: 230px; /* ✅ 최소한의 공간 확보 (이전보다 증가) */
+  flex-shrink: 0; /* ✅ 줄어들지 않도록 고정 */
+  flex-basis: 230px; /* ✅ 최소 너비 확보 */
+  margin-left: auto; /* 왼쪽 요소와 최대한 거리 확보 */
+  gap: 15px; /* ✅ 투입기간과 삭제 버튼 사이 간격 증가 */
+  white-space: nowrap; /* ✅ 텍스트 줄바꿈 방지 */
+}
+
+/* ✅ 투입기간 */
+.participant-period {
+  white-space: nowrap;
+  text-align: center;
+  font-family: monospace; /* ✅ 날짜 간격이 일정하도록 설정 */
+  width: 150px; /* ✅ 투입기간의 크기를 고정 */
+}
+
+/* ✅ 삭제 버튼 */
+.remove-button {
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+
+.remove-button:hover {
+  color: darkred;
+}
+
+/* ✅ 참여자 날짜 입력 바 */
+.small-date-input {
+  width: 120px;
+  padding: 6px;
+  font-size: 14px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* ✅ 반응형 */
+@media screen and (max-width: 500px) {
+  .participant-selection-container {
+    flex-direction: column;
+    /* 모바일에서는 세로 정렬 */
+    align-items: flex-start;
+  }
+
+  .participant-dropdown {
+    width: 100%;
+    /* 모바일에서는 전체 너비 사용 */
+  }
+
+  .participant-add-button {
+    width: 100%;
+    /* 모바일에서는 버튼도 전체 너비 */
+    margin-top: 5px;
+  }
+}
+
+/* ✅ 드롭다운과 버튼을 가로 정렬 */
+.participant-selection-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+/* ✅ 참여자 선택 드롭다운 */
+.participant-dropdown {
+  width: 100%;
+  flex-shrink: 1;
+}
+
+/* ✅ 추가 버튼 스타일 */
+.participant-add-button {
+  width: 100%;
+  flex-shrink: 2;
+  padding: 10px;
+  background-color: #10c966;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.participant-add-button:hover {
+  background-color: #0fa85a;
+}

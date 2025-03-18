@@ -1,0 +1,151 @@
+/* 전체 페이지 */
+.manage-user-page {
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+  margin-top: 50px;
+}
+
+.manage-user-box {
+  box-sizing: border-box;
+}
+
+/* 검색 컨테이너 */
+.manage-user-search-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 20px;
+  overflow-x: hidden;
+}
+
+.manage-user-search-dropdown {
+  padding: 8px;
+  width: 120px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #eee;
+}
+
+.manage-user-title {
+  text-align: center;
+}
+
+.manage-user-search-input {
+  flex-grow: 1;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* 유저 목록 컨테이너 */
+.manage-user-list-container {
+  max-width: 600px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 1vh 1vw;
+}
+
+/* 인덱스 바 (헤더) */
+.manage-user-index-bar {
+  display: flex;
+  justify-content: space-between;
+  background: #f7f7f7;
+  padding: 12px;
+  font-weight: bold;
+  border-bottom: 2px solid #ddd;
+  white-space: nowrap;
+}
+
+/* 리스트 내부 항목과 크기를 맞추기 위해 flex-basis 설정 */
+.manage-user-index-item {
+  flex-basis: 25%; /* 각 항목의 너비를 동일하게 설정 */
+  text-align: center;
+  font-size: 14px;
+}
+
+/* 유저 리스트 */
+.manage-user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.manage-user-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+
+.manage-user-item:hover {
+  background-color: #f0f0f0;
+}
+
+.manage-user-name,
+.manage-user-position,
+.manage-user-department {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* 유저 리스트 내부 요소 크기 조절 */
+.manage-user-column {
+  flex-basis: 25%; /* 인덱스 바의 크기와 동일하게 설정 */
+  text-align: center;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 버튼 컨테이너 */
+.manage-user-action-buttons {
+  display: flex;
+  justify-content: center; /* 버튼 중앙 정렬 */
+  align-items: center;
+  gap: 5px;
+  flex-basis: 25%; /* 관리 탭과 같은 크기 */
+}
+
+/* 버튼 스타일 */
+.manage-user-edit-button,
+.manage-user-delete-button {
+  padding: 5px 5px;
+  font-size: 1em;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.3s;
+  width: 10vw; /* 버튼 크기 통일 */
+  text-align: center;
+}
+
+/* 수정 버튼 */
+.manage-user-edit-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.manage-user-edit-button:hover {
+  background-color: #0056b3;
+}
+
+/* 삭제 버튼 */
+.manage-user-delete-button {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.manage-user-delete-button:hover {
+  background-color: #c0392b;
+}

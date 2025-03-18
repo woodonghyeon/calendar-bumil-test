@@ -1,0 +1,30 @@
+/* BackButton 컴포넌트 전용 스타일 */
+.back-button-container {
+    position: relative; /* 부모 요소 기준으로 컴포넌트 위치를 조정할 경우 */
+}
+
+/* 뒤로가기 버튼 & 프로젝트 추가 버튼 동일한 스타일 적용 */
+.back-button {
+    position: fixed;
+    bottom: 20px; 
+    right: 20px; 
+    width: 50px;
+    height: 50px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: #0056b3;
+}
+

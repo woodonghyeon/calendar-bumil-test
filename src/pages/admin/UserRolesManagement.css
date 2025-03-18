@@ -1,0 +1,146 @@
+/* 전체 페이지 스타일 */
+.user-roles-page {
+  display: flex;
+  margin: auto;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  min-height: 100vh;
+  margin-top: 50px;
+  background-color: #f4f6f8;
+}
+
+/* 콘텐츠 박스 스타일 */
+.user-roles-box {
+  background-color: white;
+  box-sizing: border-box;
+  border-radius: 10px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1vh 1vw;
+}
+
+/* 타이틀 */
+.user-roles-title {
+  font-size: 1.8em;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* 검색 및 필터 스타일 */
+.user-roles-search-container {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.user-roles-search-input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1em;
+  box-sizing: border-box;
+}
+
+.user-roles-search-dropdown {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1em;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  width: 120px;
+}
+
+/* ✅ 인덱스 바 (헤더) */
+.user-roles-employee-index-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* 균등한 크기 */
+  background: #eaeaea;
+  padding: 12px;
+  font-weight: bold;
+  border-bottom: 2px solid #ddd;
+}
+
+/* ✅ 인덱스 항목 스타일 */
+.user-roles-index-item {
+  text-align: center;
+  font-size: 14px;
+}
+
+/* ✅ 유저 리스트 */
+.user-roles-employee-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* ✅ 리스트 항목 */
+.user-roles-employee-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  background-color: #ffffff;
+  transition: background-color 0.2s ease;
+}
+
+.user-roles-employee-item:hover {
+  background-color: #f0f0f0;
+}
+
+/* ✅ 리스트 내부 요소 크기 조절 */
+.user-roles-column {
+  text-align: center;
+  font-size: 14px;
+}
+
+/* ✅ 권한 드롭다운 */
+.user-roles-role-dropdown {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: white;
+  cursor: pointer;
+  width: 80%;
+  text-align: center;
+  margin: auto; /* 중앙 정렬 */
+}
+
+/* ✅ 권한 필터 토글 버튼 컨테이너 */
+.role-toggle-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+/* ✅ 비활성화 상태 버튼 (흰색 계열) */
+.role-toggle-button {
+  background-color: #ffffff; /* 연한 회색 → 비활성화 상태 */
+  color: #333;
+  padding: 5px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 1;
+  margin: 0 5px;
+  border: 1px solid #ccc; /* 경계선 추가 */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ✅ 호버 상태 */
+.role-toggle-button:hover {
+  background-color: #fffdfd; /* 호버 시 약간 어두운 회색 */
+}
+
+/* ✅ 활성화 상태 버튼 (기존 활성화 색상 유지) */
+.role-toggle-button.active {
+  background-color: #007bff; /* 파란색 → 활성화 상태 */
+  color: white;
+  font-weight: bold;
+  border: none;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2); /* 활성화 상태 그림자 */
+}

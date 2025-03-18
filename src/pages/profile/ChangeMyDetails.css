@@ -1,0 +1,124 @@
+.change-user-edit-body {
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 600px;
+  min-width: none;
+  width: 100%;
+  margin: auto;
+  height: 100vh;
+}
+
+.change-user-edit-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  width: 100%;
+  padding: 20px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+.change-user-edit-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333333;
+}
+
+.change-user-edit-form-group {
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.change-user-edit-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: bolder;
+  color: black;
+}
+
+.change-user-edit-form-group input,
+.change-user-edit-form-group select,
+.change-user-info-text {
+  width: 100%;
+  font-size: 14px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.change-user-edit-form-group input:focus,
+.change-user-edit-form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.change-user-info-text {
+  border: none;
+  background-color: transparent;
+  padding-left: 10px;
+  color: #000;
+}
+
+.change-user-phone-input {
+  padding: 10px;
+}
+
+/* 버튼 컨테이너 */
+.change-user-edit-button-container,
+.change-user-change-pw-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* 버튼 스타일 */
+.change-user-edit-submit-button,
+.change-user-edit-cancel-button {
+  flex: 1;
+  padding: 12px;
+  font-size: 16px;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.change-user-change-pw-button {
+  flex: 1;
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.change-user-change-pw-button {
+  background-color: #22c55e;
+}
+
+.change-user-change-pw-button:hover {
+  background-color: #16a34a;
+}
+
+.change-user-edit-submit-button {
+  background-color: #007bff;
+}
+
+.change-user-edit-submit-button:hover {
+  background-color: #0056b3;
+}
+
+.change-user-edit-cancel-button {
+  background-color: #6c757d;
+}
+
+.change-user-edit-cancel-button:hover {
+  background-color: #5a6268;
+}
+
