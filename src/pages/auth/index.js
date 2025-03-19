@@ -1,7 +1,6 @@
 import LoginPage from "./LoginPage";
-import SignupPage from "./SignupPage";
 import ChangePWPage from "./ChangePWPage";
 
-const Auth = { LoginPage, SignupPage, ChangePWPage };
+const Auth = { LoginPage, ChangePWPage };
 
 export default Auth;

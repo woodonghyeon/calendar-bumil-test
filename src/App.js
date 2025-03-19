@@ -28,7 +28,6 @@ function App() {
 
         {/* ===== Auth ===== */}
         <Route path="/" element={<Modules.Auth.LoginPage />} />
-        <Route path="/signup" element={<Modules.Auth.SignupPage />} />
         <Route path="/change-pw" element={<Modules.Auth.ChangePWPage />} />
 
         {/* ===== Calendar ===== */}
