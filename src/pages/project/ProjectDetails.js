@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import "./ProjectDetails.css";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 /**
  * 📌 ProjectDetails - 프로젝트 상세 정보를 조회하는 페이지
@@ -28,6 +29,9 @@ const ProjectDetails = () => {
   const [error, setError] = useState(null); // 에러 메시지
 
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -51,7 +55,13 @@ const ProjectDetails = () => {
     changes: "비고",
   };
 
-  const [user, setUser] = useState({id: "", name: "", position: "", department: "", role_id: ""}); //로그인한 사용자 정보
+  const [user, setUser] = useState({
+    id: "",
+    name: "",
+    position: "",
+    department: "",
+    role_id: "",
+  }); //로그인한 사용자 정보
   const { getUserInfo, checkAuth, handleLogout } = useAuth();
 
   // 전체 데이터 가져오기
@@ -60,7 +70,6 @@ const ProjectDetails = () => {
       try {
         // 1. 사용자 정보 가져오기
         await fetchUserInfo();
-
       } catch (error) {
         console.error("데이터 로딩 오류:", error);
       }
@@ -98,8 +107,15 @@ const ProjectDetails = () => {
   const fetchProjectDetails = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${apiUrl}/project/get_project_details?project_code=${projectCode}`
+      const response = await authFetch(
+        `${apiUrl}/project/get_project_details?project_code=${projectCode}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
+          },
+        }
       );
       if (!response.ok) {
         throw new Error("프로젝트 상세정보를 불러오지 못했습니다.");
@@ -117,7 +133,13 @@ const ProjectDetails = () => {
   // ✅ 사용자 목록 데이터 가져오기 (프로젝트 인원 상태 표시에 필요함)
   const fetchEmployees = async () => {
     try {
-      const response = await fetch(`${apiUrl}/user/get_users`);
+      const response = await authFetch(`${apiUrl}/user/get_users`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
+        },
+      });
       if (!response.ok)
         throw new Error("사용자 데이터를 가져오는 데 실패했습니다.");
 
@@ -239,7 +261,7 @@ const ProjectDetails = () => {
   return (
     <div className="project-details-app-body">
       <div className="project-details-sidebar">
-        <Sidebar user={user}/>
+        <Sidebar user={user} />
       </div>
       <div className="project-details-container">
         <div className="project-details-edit-button-container">

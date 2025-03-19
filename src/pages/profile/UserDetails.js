@@ -15,6 +15,7 @@ import {
   FaUserCircle,
 } from "react-icons/fa"; // 아이콘 추가
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 const UserDetails = () => {
   const [user, setUser] = useState(null); // 이 페이지에서만 프로필 유저 정보
@@ -26,6 +27,9 @@ const UserDetails = () => {
   const [isTableView, setIsTableView] = useState(false); // 추가: 표 형태 전환 상태
 
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -71,8 +75,7 @@ const UserDetails = () => {
 
   // 프로필 정보 가져오는 함수
   const fetchUserData = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!accessToken) {
       setError("로그인이 필요합니다.");
       setLoading(false);
       return;
@@ -80,13 +83,14 @@ const UserDetails = () => {
 
     try {
       // 사용자 정보 가져오기
-      const userResponse = await fetch(
+      const userResponse = await authFetch(
         `${apiUrl}/user/get_user?user_id=${user_id}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
           },
         }
       );
@@ -107,8 +111,7 @@ const UserDetails = () => {
 
   // 사용자가 참여한 프로젝트 데이터 가져오는 함수
   const fetchUserProjectData = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!accessToken) {
       setError("로그인이 필요합니다.");
       setLoading(false);
       return;
@@ -116,13 +119,14 @@ const UserDetails = () => {
 
     try {
       // 사용자 정보 가져오기
-      const userResponse = await fetch(
+      const userResponse = await authFetch(
         `${apiUrl}/project/get_user_and_projects?user_id=${user_id}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
           },
         }
       );
@@ -144,7 +148,14 @@ const UserDetails = () => {
   // 상태 목록 가져오는 함수
   const fetchStatusList = async () => {
     try {
-      const response = await fetch(`${apiUrl}/status/get_status_list`);
+      const response = await authFetch(`${apiUrl}/status/get_status_list`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
+        },
+      });
       if (!response.ok) throw new Error("상태 목록을 가져오지 못했습니다.");
       const data = await response.json();
       setStatusList(data.statuses); // [{ id: 1, comment: "HQ" }, ...]

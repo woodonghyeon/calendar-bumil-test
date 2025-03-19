@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import "./ManageDepartment.css";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 const ManageDepartment = () => {
   const [departmentList, setDepartmentList] = useState([]);
@@ -11,6 +12,10 @@ const ManageDepartment = () => {
   const [newTeamName, setNewTeamName] = useState(""); // 팀 이름 (선택 사항)
   const [loading, setLoading] = useState(true);
   const [editDepartment, setEditDepartment] = useState(null); // 수정할 부서 정보 저장
+
+  const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
 
   const navigate = useNavigate();
   const [user, setUser] = useState({
@@ -45,11 +50,15 @@ const ManageDepartment = () => {
 
   const fetchDepartmentList = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/department/get_department_list`,
+      const response = await authFetch(
+        `${apiUrl}/department/get_department_list`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
+          },
         }
       );
 
@@ -71,14 +80,14 @@ const ManageDepartment = () => {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/department/create_department`,
+      const response = await authFetch(
+        `${apiUrl}/department/create_department`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
           },
           body: JSON.stringify({
             dpr_id: newDepartmentId,
@@ -107,12 +116,15 @@ const ManageDepartment = () => {
     if (!window.confirm("정말로 이 부서를 삭제하시겠습니까?")) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/department/delete_department/${dpr_id}`,
+      const response = await authFetch(
+        `${apiUrl}/department/delete_department/${dpr_id}`,
         {
           method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
+          },
         }
       );
 
@@ -135,14 +147,14 @@ const ManageDepartment = () => {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/department/update_department/${editDepartment.dpr_id}`,
+      const response = await authFetch(
+        `${apiUrl}/department/update_department/${editDepartment.dpr_id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
           },
           body: JSON.stringify({
             dpr_nm: editDepartment.dpr_nm,

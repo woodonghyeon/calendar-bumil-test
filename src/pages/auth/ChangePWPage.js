@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ChangePWPage.css";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 const ChangePWPage = () => {
-  const [loading, setLoading] = useState(true); // 데이터 로딩 상태 관리 (true: 로딩 중) 
+  const [loading, setLoading] = useState(true); // 데이터 로딩 상태 관리 (true: 로딩 중)
   const [formData, setFormData] = useState({
     old_password: "", //현재 비밀번호
     new_password: "", //변경할 비밀번호
@@ -11,6 +12,10 @@ const ChangePWPage = () => {
   });
   const [changepwStatus, setchangepwStatus] = useState("");
   const [errors, setErrors] = useState({});
+
+  const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
 
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -21,7 +26,7 @@ const ChangePWPage = () => {
     const fetchUserInfo = async () => {
       const userInfo = await getUserInfo();
       setUser(userInfo);
-      setLoading(false);  // 로딩 완료
+      setLoading(false); // 로딩 완료
     };
     fetchUserInfo();
   }, []);
@@ -59,17 +64,15 @@ const ChangePWPage = () => {
     if (!validateForm()) return;
 
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/auth/change_password`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await authFetch(`${apiUrl}/auth/change_password`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
+        },
+        body: JSON.stringify(formData),
+      });
 
       const data = await response.json();
 

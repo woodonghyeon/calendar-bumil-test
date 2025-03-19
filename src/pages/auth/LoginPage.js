@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 import "./LoginPage.css";
 
 /**
@@ -43,13 +45,25 @@ const LoginPage = () => {
       setRememberMe(true);
     }
 
-    if (savedAutoLogin) {
-      const token = localStorage.getItem("token");
-      if (token) {
-        navigate("/calendar", { replace: true }); // 자동으로 캘린더 페이지로 이동
+    const tryAutoLogin = async () => {
+      if (savedAutoLogin) {
+        const accessToken = localStorage.getItem("access_token");
+        if (accessToken) {
+          // access_token이 있으면 바로 이동 시도
+          navigate("/calendar", { replace: true });
+        } else {
+          // access_token이 없으면 refresh 시도
+          const refreshToken = localStorage.getItem("refresh_token");
+          if (savedAutoLogin && refreshToken) {
+            const newAccessToken = await refreshAccessToken();
+            if (newAccessToken) {
+              navigate("/calendar", { replace: true });
+            }
+          }
+        }
       }
-      setAutoLogin(true);
-    }
+    };
+    tryAutoLogin();
   }, [navigate]);
 
   // 아이디 저장 체크박스 이벤트 핸들러
@@ -62,6 +76,7 @@ const LoginPage = () => {
     setAutoLogin(e.target.checked);
   };
 
+  const { refreshAccessToken } = useAuth();
   /**
    * 🔑 **로그인 처리 함수**
    * - 사용자가 입력한 아이디와 비밀번호를 백엔드로 전송
@@ -74,7 +89,7 @@ const LoginPage = () => {
     setMessage("");
 
     try {
-      const response = await fetch(`${apiUrl}/auth/login`, {
+      const response = await authFetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -84,25 +99,32 @@ const LoginPage = () => {
 
       const data = await response.json();
 
+      if (!data.access_token) {
+        setMessage("Access Token 발급 실패. 관리자에게 문의하세요.");
+        return;
+      }
+
       if (response.ok) {
         setMessage(data.message);
 
-        // ✅ 로그인 성공 시 토큰 저장
-        localStorage.setItem("token", data.token);
+        // ✅ 로그인 성공 시 토큰 저장, refresh_token은 서버 DB에도 저장
+        localStorage.setItem("access_token", data.access_token);
+        localStorage.setItem("refresh_token", data.refresh_token);
 
         // ✅ 로그인 사용자 정보 불러오기
-        const userResponse = await fetch(`${apiUrl}/auth/get_logged_in_user`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${data.token}`,
-          },
-        });
+        // LoginPage에서 get_logged_in_user를 왜 사용하는지 모르겠어서 주석 처리함.
+        // const userResponse = await fetch(`${apiUrl}/auth/get_logged_in_user`, {
+        //   method: "GET",
+        //   headers: {
+        //     Authorization: `Bearer ${data.token}`,
+        //   },
+        // });
 
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          //localStorage.setItem("user", JSON.stringify(userData.user)); // ✅ 최신 사용자 정보 저장
-          localStorage.removeItem("user");
-        }
+        // if (userResponse.ok) {
+        //   const userData = await userResponse.json();
+        //   //localStorage.setItem("user", JSON.stringify(userData.user)); // ✅ 최신 사용자 정보 저장
+        //   localStorage.removeItem("user");
+        // }
 
         // ✅ 아이디 저장 여부 처리
         if (rememberMe) {
@@ -119,11 +141,12 @@ const LoginPage = () => {
         }
 
         // ✅ 별도의 API로 로그인 기록을 남기는 경우
-        await fetch(`${apiUrl}/auth/log_login`, {
+        await authFetch(`${apiUrl}/auth/log_login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${data.token}`,
+            Authorization: `Bearer ${data.access_token}`,
+            "X-Refresh-Token": localStorage.getItem("refresh_token"),
           },
           body: JSON.stringify({ user_id: id }),
         });

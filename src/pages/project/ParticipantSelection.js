@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import Select from "react-select";
 import "./ParticipantSelection.css";
+import { authFetch } from "../../utils/authFetch";
 
 const ParticipantSelection = ({
   participants,
@@ -10,6 +11,8 @@ const ParticipantSelection = ({
   projectEndDate,
 }) => {
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
 
   const [users, setUsers] = useState([]); // 사용자 목록
   const [selectedParticipants, setSelectedParticipants] = useState([]); // ✅ 즉시 추가되는 리스트
@@ -17,7 +20,14 @@ const ParticipantSelection = ({
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch(`${apiUrl}/user/get_users`);
+        const response = await authFetch(`${apiUrl}/user/get_users`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
+          },
+        });
         if (response.ok) {
           const data = await response.json();
           setUsers(

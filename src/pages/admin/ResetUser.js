@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import "./ResetUser.css";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 const ResetUser = () => {
   const [employees, setEmployees] = useState([]);
@@ -21,6 +22,8 @@ const ResetUser = () => {
   const { getUserInfo, checkAuth, handleLogout } = useAuth();
 
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
 
   // 로그인한 사용자 정보 가져오기 및 권한 확인 후 권한 없으면 로그아웃 시키기
   useEffect(() => {
@@ -46,7 +49,14 @@ const ResetUser = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch(`${apiUrl}/user/get_users`);
+      const response = await authFetch(`${apiUrl}/user/get_users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
+        },
+      });
       if (!response.ok)
         throw new Error("사용자 데이터를 가져오는 데 실패했습니다.");
 
@@ -66,11 +76,12 @@ const ResetUser = () => {
       // 비밀번호 설정: "bumil" + 전화번호 뒷자리 4자리
       const newPassword = `bumil${phoneLast4Digits}!`;
 
-      const response = await fetch(`${apiUrl}/admin/update_user`, {
+      const response = await authFetch(`${apiUrl}/admin/update_user`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
         },
         body: JSON.stringify({
           id: employeeId,
@@ -124,7 +135,6 @@ const ResetUser = () => {
             >
               <option value="name">이름</option>
               <option value="position">직급</option>
-              <option value="department">부서</option>
             </select>
 
             <input

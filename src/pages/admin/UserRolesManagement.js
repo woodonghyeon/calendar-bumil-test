@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import "./UserRolesManagement.css";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
+
 const UserRolesManagement = () => {
   const [employees, setEmployees] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -10,10 +12,19 @@ const UserRolesManagement = () => {
   const [activeRoleFilter, setActiveRoleFilter] = useState(null); // ✅ 선택된 역할 필터
 
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
+
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true); // 데이터 로딩 상태 관리 (true: 로딩 중) 
-  const [user, setUser] = useState({id: "", name: "", position: "", department: "", role_id: ""}); //로그인한 사용자 정보
+  const [loading, setLoading] = useState(true); // 데이터 로딩 상태 관리 (true: 로딩 중)
+  const [user, setUser] = useState({
+    id: "",
+    name: "",
+    position: "",
+    department: "",
+    role_id: "",
+  }); //로그인한 사용자 정보
   const { getUserInfo, checkAuth, handleLogout } = useAuth();
 
   // 로그인한 사용자 정보 가져오기 및 권한 확인 후 권한 없으면 로그아웃 시키기
@@ -21,7 +32,7 @@ const UserRolesManagement = () => {
     const fetchUserInfo = async () => {
       const userInfo = await getUserInfo();
       setUser(userInfo);
-      
+
       const isAuthorized = checkAuth(userInfo?.role_id, ["AD_ADMIN"]); // 권한 확인하고 맞으면 true, 아니면 false 반환
       if (!isAuthorized) {
         console.error("관리자 권한이 없습니다.");
@@ -29,7 +40,7 @@ const UserRolesManagement = () => {
         return;
       }
       setLoading(false); // 로딩 완료
-    };  
+    };
     fetchUserInfo();
   }, []);
 
@@ -40,7 +51,14 @@ const UserRolesManagement = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch(`${apiUrl}/user/get_users`);
+      const response = await authFetch(`${apiUrl}/user/get_users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
+        },
+      });
       if (!response.ok)
         throw new Error("사용자 데이터를 가져오는 데 실패했습니다.");
 
@@ -54,11 +72,12 @@ const UserRolesManagement = () => {
   // ✅ 역할 변경 API 호출
   const handleRoleChange = async (employeeId, newRoleId) => {
     try {
-      const response = await fetch(`${apiUrl}/admin/update_user`, {
+      const response = await authFetch(`${apiUrl}/admin/update_user`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
         },
         body: JSON.stringify({
           id: employeeId,
@@ -124,7 +143,6 @@ const UserRolesManagement = () => {
           >
             <option value="name">이름</option>
             <option value="position">직급</option>
-            <option value="department">부서</option>
           </select>
 
           <input

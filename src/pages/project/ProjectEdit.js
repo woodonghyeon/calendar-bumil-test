@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import Select from "react-select";
 import "./ProjectEdit.css";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 /**
  * 📌 ProjectEdit - 프로젝트 수정 페이지
@@ -39,6 +40,9 @@ const ProjectEdit = () => {
   const [users, setUsers] = useState([]); // 참여 가능한 유저 목록
 
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -144,8 +148,15 @@ const ProjectEdit = () => {
   const fetchProjectDetails = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${apiUrl}/project/get_project_details?project_code=${projectCode}`
+      const response = await authFetch(
+        `${apiUrl}/project/get_project_details?project_code=${projectCode}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
+          },
+        }
       );
       if (!response.ok) {
         throw new Error("프로젝트 상세정보를 불러오지 못했습니다.");
@@ -163,7 +174,13 @@ const ProjectEdit = () => {
   // ✅ 현재 시스템에 등록된 모든 직원 목록을 API 에서 불러옴
   const fetchEmployees = async () => {
     try {
-      const response = await fetch(`${apiUrl}/user/get_users`);
+      const response = await authFetch(`${apiUrl}/user/get_users`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
+        },
+      });
       if (!response.ok)
         throw new Error("사용자 데이터를 가져오는 데 실패했습니다.");
       const data = await response.json();
@@ -320,11 +337,12 @@ const ProjectEdit = () => {
 
       // console.log("저장할 데이터:", JSON.stringify(projectToSave, null, 2));
 
-      const response = await fetch(`${apiUrl}/project/edit_project`, {
+      const response = await authFetch(`${apiUrl}/project/edit_project`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
         },
         body: JSON.stringify(projectToSave),
       });
@@ -397,13 +415,14 @@ const ProjectEdit = () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${apiUrl}/project/delete_project/${project_code}`,
         {
-          method: "DELETE",
+          method: "PUT",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken})}`,
+            "X-Refresh-Token": refreshToken,
           },
         }
       );

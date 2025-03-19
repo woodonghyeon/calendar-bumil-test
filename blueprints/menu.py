@@ -2,14 +2,26 @@ from flask import Blueprint, request, jsonify
 import jwt, logging
 from db import get_db_connection
 from config import SECRET_KEY
+from blueprints.auth import verify_and_refresh_token
 
 menu_bp = Blueprint('menu', __name__, url_prefix='/menu')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # 메뉴 목록 조회
-@menu_bp.route('/get_menu_list', methods=['GET'])
+@menu_bp.route('/get_menu_list', methods=['GET', 'OPTIONS'])
 def get_menu_list():
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -25,13 +37,24 @@ def get_menu_list():
         conn.close()
 
 # 메뉴 추가
-@menu_bp.route('/create_menu', methods=['POST'])
+@menu_bp.route('/create_menu', methods=['POST', 'OPTIONS'])
 def create_menu():
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     data = request.get_json()
     menu_id = data.get('menu_id')
     menu_nm = data.get('menu_nm')
     menu_order = data.get('menu_order', 0)
-    created_by = data.get('created_by', 'SYSTEM')
+    created_by = user_name or 'SYSTEM'
 
     if not menu_id or not menu_nm:
         return jsonify({'message': '메뉴 ID와 이름을 입력해야 합니다.'}), 400
@@ -39,6 +62,15 @@ def create_menu():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
+        # 존재하는 menu_id 인지 확인
+        sql_select_menu = """
+        SELECT COUNT(*) AS count FROM tb_menu WHERE menu_id = %s"""
+        cursor.execute(sql_select_menu, (menu_id,))
+        exists = cursor.fetchone()['count'] > 0
+        logger.info(f"[SQL/SELECT] {sql_select_menu} | PARAMS: ({menu_id})")
+        if exists:
+            return jsonify({'message': '이미 존재하는 menu_id입니다.'}), 400
+        
         sql = """
         INSERT INTO tb_menu (menu_id, menu_nm, menu_order, created_by, updated_by)
         VALUES (%s, %s, %s, %s, %s)"""
@@ -53,12 +85,23 @@ def create_menu():
         conn.close()
         
 # 메뉴 수정
-@menu_bp.route('/update_menu/<string:menu_id>', methods=['PUT'])
+@menu_bp.route('/update_menu/<string:menu_id>', methods=['PUT', 'OPTIONS'])
 def update_menu(menu_id):
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     data = request.get_json()
     menu_nm = data.get('menu_nm')
     menu_order = data.get('menu_order')
-    updated_by = data.get('updated_by', 'SYSTEM')
+    updated_by = user_name or 'SYSTEM'
 
     if not menu_nm or menu_order is None:
         return jsonify({'message': '메뉴 이름과 순서를 입력해야 합니다.'}), 400
@@ -86,8 +129,19 @@ def update_menu(menu_id):
 
 
 # 메뉴 삭제
-@menu_bp.route('/delete_menu/<string:menu_id>', methods=['DELETE'])
+@menu_bp.route('/delete_menu/<string:menu_id>', methods=['DELETE', 'OPTIONS'])
 def delete_menu(menu_id):
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     conn = get_db_connection()
     cursor = conn.cursor()
     try:

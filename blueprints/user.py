@@ -2,7 +2,8 @@ from flask import Blueprint, request, jsonify
 import logging
 from db import get_db_connection
 from config import SECRET_KEY
-from .auth import decrypt_aes, decrypt_deterministic, encrypt_deterministic
+from blueprints.auth import decrypt_aes, decrypt_deterministic, encrypt_deterministic
+from blueprints.auth import verify_and_refresh_token
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 logger = logging.getLogger(__name__)
@@ -13,6 +14,15 @@ logger.setLevel(logging.INFO)
 def get_pending_users():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     try:
         conn = get_db_connection()
         if conn is None:
@@ -39,8 +49,19 @@ def get_pending_users():
             pass
 
 # 모든 사용자 목록 조회
-@user_bp.route('/get_users', methods=['GET'])
+@user_bp.route('/get_users', methods=['GET', 'OPTIONS'])
 def get_users():
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     try:
         conn = get_db_connection()
         if conn is None:
@@ -90,8 +111,16 @@ def get_user():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
     
-    user_id = request.args.get('user_id')
-    if not user_id:
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
+    target_user_id = request.args.get('user_id')
+    if not target_user_id:
         return jsonify({'message': 'user_id 파라미터가 제공되지 않았습니다.'}), 400
 
     try:
@@ -115,7 +144,7 @@ def get_user():
             FROM tb_user AS tu
             LEFT JOIN tb_department AS td ON tu.department = td.dpr_id  -- 부서 매핑
             WHERE tu.id = %s AND tu.is_delete_yn = 'N'"""
-        cursor.execute(sql, (user_id,))
+        cursor.execute(sql, (target_user_id,))
         logger.info(f"[SQL/SELECT] tb_user, tb_department /get_user {sql}")
 
         user_info = cursor.fetchone()

@@ -3,7 +3,8 @@ import jwt, logging
 from db import get_db_connection
 from config import SECRET_KEY
 from datetime import datetime
-from .auth import decrypt_deterministic, encrypt_deterministic, decrypt_aes
+from blueprints.auth import decrypt_deterministic, encrypt_deterministic, decrypt_aes
+from blueprints.auth import verify_and_refresh_token
 
 project_bp = Blueprint('project', __name__, url_prefix='/project')
 logger = logging.getLogger(__name__)
@@ -28,7 +29,16 @@ def parse_date(date_str: str) -> str:
 @project_bp.route('/get_all_project', methods=['GET', 'OPTIONS'])
 def get_all_project():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     try:
         conn = get_db_connection()
         if conn is None:
@@ -70,6 +80,15 @@ def get_all_project():
 def get_search_project():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     try:
         conn = get_db_connection()
         if conn is None:
@@ -125,7 +144,15 @@ def get_search_project():
 def get_project_details():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
-
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     project_code = request.args.get('project_code')
     if not project_code:
         return jsonify({'message': '프로젝트 코드가 제공되지 않았습니다.'}), 400
@@ -175,20 +202,18 @@ def get_project_details():
 @project_bp.route('/add_project', methods=['POST', 'OPTIONS'])
 def add_project():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
-
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        created_by = payload.get('name', 'SYSTEM')
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
+    created_by = user_name or 'SYSTEM'
+    updated_by = user_name or 'SYSTEM'
 
     try:
         data = request.get_json()
@@ -225,7 +250,18 @@ def add_project():
         conn = get_db_connection()
         if conn is None:
             return jsonify({'message': '데이터베이스 연결 실패!'}), 500
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
+
+        # 프로젝트 코드 중복 체크
+        sql_check_project_code = """
+        SELECT COUNT(*) AS cnt 
+        FROM tb_project 
+        WHERE project_code = %s AND is_delete_yn = 'N' OR is_delete_yn = 'Y'"""
+        cursor.execute(sql_check_project_code, (project_code,))
+        logger.info(f"[SQL/SELECT] tb_project /add_project{sql_check_project_code}")
+        existing_count = cursor.fetchone()['cnt']
+        if existing_count > 0:
+            return jsonify({'message': '이미 존재하는 프로젝트 코드입니다.'}), 400
 
         sql_project = """
         INSERT INTO tb_project
@@ -275,22 +311,17 @@ def add_project():
 @project_bp.route('/edit_project', methods=['POST', 'OPTIONS'])
 def edit_project():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        updated_by = payload.get('name', 'SYSTEM')
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
-    except Exception as e:
-        print(f"토큰 검증 오류: {e}")
-        return jsonify({'message': '토큰 검증 오류'}), 401
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
+    updated_by = user_name or 'SYSTEM'
 
     try:
         data = request.get_json()
@@ -421,11 +452,19 @@ def edit_project():
             pass
 
 # 프로젝트 삭제 (논리 삭제)
-@project_bp.route('/delete_project/<string:project_code>', methods=['DELETE', 'OPTIONS'])
+@project_bp.route('/delete_project/<string:project_code>', methods=['PUT', 'OPTIONS'])
 def delete_project(project_code):
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     try:
         conn = get_db_connection()
         if conn is None:
@@ -461,9 +500,15 @@ def delete_project(project_code):
 def get_user_and_projects():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
-
-    # 클라이언트에서 평문 user_id를 쿼리 스트링으로 전달받음 (예: ?user_id=dhwoo@bumil.co.kr)
-    user_id = request.args.get('user_id')
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     if not user_id:
         return jsonify({'message': 'user_id 파라미터가 제공되지 않았습니다.'}), 400
 
@@ -523,7 +568,15 @@ def get_user_and_projects():
 def get_users_and_projects():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
-
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     data = request.get_json()
     user_ids = data.get('user_ids')
 

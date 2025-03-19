@@ -5,6 +5,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "./NoticeCreate.css";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 /**
  * 📌  NoticeCreate - 공지사항 생성을 위한 컴포넌트
@@ -23,6 +24,9 @@ const NoticeCreate = () => {
   const [error, setError] = useState(null); // 에러 메세지
 
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refresh_token = localStorage.getItem("refresh_token");
+
   const navigate = useNavigate();
 
   /**
@@ -51,7 +55,7 @@ const NoticeCreate = () => {
       try {
         // 1. 사용자 정보 가져오기
         const userInfo = await fetchUserInfo();
-        
+
         //3. 권한 확인
         const isAuthorized = checkAuth(userInfo?.role_id, ["AD_ADMIN"]); // 권한 확인하고 맞으면 true, 아니면 false 반환
         if (!isAuthorized) {
@@ -59,7 +63,6 @@ const NoticeCreate = () => {
           handleLogout();
           return;
         }
-
       } catch (error) {
         console.error("데이터 로딩 오류:", error);
       }
@@ -97,16 +100,16 @@ const NoticeCreate = () => {
   // ✅ 공지사항 생성 API 호출
   const createNotice = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
+      if (!accessToken) {
         throw new Error("로그인이 필요합니다.");
       }
 
-      const response = await fetch(`${apiUrl}/notice/create_notice`, {
+      const response = await authFetch(`${apiUrl}/notice/create_notice`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refresh_token,
         },
         body: JSON.stringify(formData),
       });
@@ -124,20 +127,26 @@ const NoticeCreate = () => {
 
   const modules = {
     toolbar: [
-      [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
-      [{ 'size': ['small', false, 'large', 'huge'] }],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      [{ 'align': [] }],
-      ['bold', 'italic', 'underline'],
-      ['link'],
+      [{ header: "1" }, { header: "2" }, { font: [] }],
+      [{ size: ["small", false, "large", "huge"] }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ align: [] }],
+      ["bold", "italic", "underline"],
+      ["link"],
     ],
   };
-  
+
   const formats = [
-    'header', 'font', 'size', 'list', 'align', 'bold', 'italic', 'underline', 'link',
+    "header",
+    "font",
+    "size",
+    "list",
+    "align",
+    "bold",
+    "italic",
+    "underline",
+    "link",
   ];
-  
-  
 
   // ✅ 로딩 중 또는 에러 시 화면에 표시할 메세지
   if (loading) return <p>데이터를 불러오는 중...</p>;
@@ -145,7 +154,7 @@ const NoticeCreate = () => {
 
   return (
     <div>
-      <Sidebar user={user}/>
+      <Sidebar user={user} />
       <div className="notice-create-container">
         <h2>공지사항 생성</h2>
 

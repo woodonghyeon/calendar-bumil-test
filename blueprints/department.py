@@ -3,6 +3,7 @@ import jwt, logging
 from db import get_db_connection
 from config import SECRET_KEY
 from datetime import datetime
+from blueprints.auth import verify_and_refresh_token
 
 department_bp = Blueprint('department', __name__, url_prefix='/department')
 logger = logging.getLogger(__name__)
@@ -12,20 +13,15 @@ logger.setLevel(logging.INFO)
 @department_bp.route('/get_department_list', methods=['GET', 'OPTIONS'])
 def get_department_list():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    # 토큰 검증
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
 
     conn = get_db_connection()
     if conn is None:
@@ -49,20 +45,15 @@ def get_department_list():
 @department_bp.route('/get_department/<string:dpr_id>', methods=['GET', 'OPTIONS'])
 def get_department(dpr_id):
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    # 토큰 검증
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
     
     conn = get_db_connection()
     if conn is None:
@@ -87,26 +78,21 @@ def get_department(dpr_id):
 @department_bp.route('/create_department', methods=['POST', 'OPTIONS'])
 def create_department():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    # 토큰 검증
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
     
     data = request.get_json()
     dpr_id = data.get('dpr_id')
     dpr_nm = data.get('dpr_nm')
     team_nm = data.get('team_nm', None)
-    created_by = data.get('created_by', 'SYSTEM')
+    created_by = user_name or 'SYSTEM'
 
     if not dpr_id or not dpr_nm:
         return jsonify({'message': '부서 ID와 부서명을 입력해야 합니다.'}), 400
@@ -134,25 +120,20 @@ def create_department():
 @department_bp.route('/update_department/<string:dpr_id>', methods=['PUT', 'OPTIONS'])
 def update_department(dpr_id):
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    # 토큰 검증
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
     
     data = request.get_json()
     dpr_nm = data.get('dpr_nm')
     team_nm = data.get('team_nm')
-    updated_by = data.get('updated_by', 'SYSTEM')
+    updated_by = user_name or 'SYSTEM'
 
     conn = get_db_connection()
     if conn is None:
@@ -182,20 +163,15 @@ def update_department(dpr_id):
 @department_bp.route('/delete_department/<string:dpr_id>', methods=['DELETE', 'OPTIONS'])
 def delete_department(dpr_id):
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    # 토큰 검증
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
     
     conn = get_db_connection()
     if conn is None:

@@ -3,10 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import "./ChangeMyDetails.css";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 const ChangeMyDetails = () => {
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
 
   const [formData, setFormData] = useState({
     username: "",
@@ -72,12 +75,13 @@ const ChangeMyDetails = () => {
     if (!userId) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
+      const response = await authFetch(
         `${apiUrl}/user/get_user?user_id=${userId}`,
         {
           method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
+          "Content-Type": "application/json",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          "X-Refresh-Token": refreshToken,
         }
       );
 
@@ -96,8 +100,8 @@ const ChangeMyDetails = () => {
 
       setUser({
         ...data.user,
-        department_name: data.user.department_name, 
-        team_name: data.user.team_name, 
+        department_name: data.user.department_name,
+        team_name: data.user.team_name,
       });
     } catch (error) {
       console.error("유저 데이터 불러오기 오류:", error);
@@ -126,12 +130,12 @@ const ChangeMyDetails = () => {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${apiUrl}/admin/update_user`, {
+      const response = await authFetch(`${apiUrl}/admin/update_user`, {
         method: "PUT",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
         },
         body: JSON.stringify({
           id: user.id,

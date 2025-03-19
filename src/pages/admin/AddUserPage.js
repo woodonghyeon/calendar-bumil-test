@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import "./AddUserPage.css"; // 스타일 파일 추가
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 const AddUserPage = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +19,10 @@ const AddUserPage = () => {
   const [roles, setRoles] = useState([]);
   const [signupStatus, setSignupStatus] = useState("");
   const [generatedPassword, setGeneratedPassword] = useState(""); // ✅ 초기 비밀번호 표시용
+
+  const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
 
   const [loading, setLoading] = useState(true); // 데이터 로딩 상태 관리 (true: 로딩 중)
   const [user, setUser] = useState({
@@ -73,13 +78,14 @@ const AddUserPage = () => {
     // API 호출
     const fetchData = async () => {
       try {
-        const deptRes = await fetch(
-          `${process.env.REACT_APP_API_URL}/department/get_department_list`,
+        const deptRes = await authFetch(
+          `${apiUrl}/department/get_department_list`,
           {
             method: "GET",
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
               "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+              "X-Refresh-Token": refreshToken,
             },
           }
         );
@@ -87,9 +93,14 @@ const AddUserPage = () => {
         // const posRes = await fetch(
         //   `${process.env.REACT_APP_API_URL}/admin/get_position_list`
         // );
-        const roleRes = await fetch(
-          `${process.env.REACT_APP_API_URL}/admin/get_role_list`
-        );
+        const roleRes = await authFetch(`${apiUrl}/admin/get_role_list`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
+          },
+        });
 
         if (!deptRes.ok) throw new Error("부서 목록을 가져오지 못했습니다.");
 
@@ -139,17 +150,15 @@ const AddUserPage = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/admin/add_user`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await authFetch(`${apiUrl}/admin/add_user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
+        },
+        body: JSON.stringify(formData),
+      });
 
       const data = await response.json();
 

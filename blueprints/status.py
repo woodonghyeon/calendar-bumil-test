@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 import jwt, logging
 from db import get_db_connection
 from config import SECRET_KEY
+from blueprints.auth import verify_and_refresh_token
 
 status_bp = Blueprint('status', __name__, url_prefix='/status')
 logger = logging.getLogger(__name__)
@@ -11,7 +12,16 @@ logger.setLevel(logging.INFO)
 @status_bp.route('/get_all_status', methods=['GET', 'OPTIONS'])
 def get_all_status():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     try:
         conn = get_db_connection()
         if conn is None:
@@ -38,6 +48,15 @@ def get_all_status():
 def get_status_list():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     try:
         conn = get_db_connection()
         if conn is None:
@@ -65,7 +84,16 @@ def get_status_list():
 @status_bp.route('/get_users_status', methods=['POST', 'OPTIONS'])
 def get_users_status():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     data = request.get_json()
     user_ids = data.get("user_ids", [])
     if not user_ids:
@@ -101,6 +129,15 @@ def get_users_status():
 def add_status():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     data = request.get_json()
     new_status = data.get('status')
     comment = data.get('comment', '')
@@ -134,7 +171,15 @@ def add_status():
 @status_bp.route('/edit_status/<string:status_id>', methods=['PUT', 'OPTIONS'])
 def edit_status(status_id):
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
 
     try:
         data = request.get_json()
@@ -182,6 +227,15 @@ def edit_status(status_id):
 def delete_status(status):
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     try:
         conn = get_db_connection()
         if conn is None:
@@ -209,19 +263,17 @@ def delete_status(status):
 @status_bp.route('/update_status', methods=['PUT', 'OPTIONS'])
 def update_status():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    requester_user_id, user_name, requester_role, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if requester_user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
 
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        requester_user_id = payload['user_id']
-        requester_role = payload.get('role_id')
-
-        # 데이터베이스 커넥션과 커서를 여기서 생성
         conn = get_db_connection()
         if conn is None:
             return jsonify({'message': '데이터베이스 연결 실패!'}), 500

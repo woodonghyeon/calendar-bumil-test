@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import "./ProjectCreate.css";
 import ParticipantSelection from "./ParticipantSelection";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 /**
  * 📌 ProjectCreate - 프로젝트를 생성하는 페이지
@@ -24,7 +25,9 @@ import { useAuth } from "../../utils/useAuth";
 
 const ProjectCreate = () => {
   const navigate = useNavigate();
-  const apiUrl = process.env.REACT_APP_API_URL || "http://3.38.20.237";
+  const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
 
   const [user, setUser] = useState({
     id: "",
@@ -42,14 +45,16 @@ const ProjectCreate = () => {
       try {
         // 1. 사용자 정보 가져오기
         const userInfo = await fetchUserInfo();
-        
-        const isAuthorized = checkAuth(userInfo?.role_id, ["AD_ADMIN", "PR_ADMIN"]); // 권한 확인하고 맞으면 true, 아니면 false 반환
+
+        const isAuthorized = checkAuth(userInfo?.role_id, [
+          "AD_ADMIN",
+          "PR_ADMIN",
+        ]); // 권한 확인하고 맞으면 true, 아니면 false 반환
         if (!isAuthorized) {
           console.error("관리자 권한이 없습니다.");
           handleLogout();
           return;
         }
-
       } catch (error) {
         console.error("데이터 로딩 오류:", error);
       }
@@ -129,8 +134,7 @@ const ProjectCreate = () => {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
+      if (!accessToken) {
         throw new Error("로그인이 필요합니다.");
       }
 
@@ -149,11 +153,12 @@ const ProjectCreate = () => {
 
       //console.log("📤 전송된 데이터:", JSON.stringify(payload, null, 2)); // 디버깅용 출력
 
-      const response = await fetch(`${apiUrl}/project/add_project`, {
+      const response = await authFetch(`${apiUrl}/project/add_project`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
         },
         body: JSON.stringify(payload),
       });
@@ -177,7 +182,7 @@ const ProjectCreate = () => {
   return (
     <div className="project-create-app-body">
       <div className="project-create-sidebar">
-        <Sidebar user={user}/>
+        <Sidebar user={user} />
         <div className="project-create-container">
           <h2 className="project-create-title">프로젝트 생성</h2>
           {error && <p className="project-create-error-message">⚠️ {error}</p>}
@@ -255,7 +260,9 @@ const ProjectCreate = () => {
                       business_start_date: newStartDate,
                       // 🚀 자동 조정: 시작 날짜가 종료 날짜보다 늦다면 종료 날짜도 변경
                       business_end_date:
-                        prev.business_end_date && new Date(newStartDate) > new Date(prev.business_end_date)
+                        prev.business_end_date &&
+                        new Date(newStartDate) >
+                          new Date(prev.business_end_date)
                           ? newStartDate
                           : prev.business_end_date,
                     }));
@@ -274,7 +281,9 @@ const ProjectCreate = () => {
                       business_end_date: newEndDate,
                       // 🚀 자동 조정: 종료 날짜가 시작 날짜보다 빠르면 시작 날짜도 변경
                       business_start_date:
-                        prev.business_start_date && new Date(prev.business_start_date) > new Date(newEndDate)
+                        prev.business_start_date &&
+                        new Date(prev.business_start_date) >
+                          new Date(newEndDate)
                           ? newEndDate
                           : prev.business_start_date,
                     }));

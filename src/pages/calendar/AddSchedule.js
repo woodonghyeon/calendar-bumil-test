@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import "./AddSchedule.css";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 import Sidebar from "../components/Sidebar";
 
 /**
@@ -26,6 +27,8 @@ import Sidebar from "../components/Sidebar";
  */
 
 const API_URL = process.env.REACT_APP_API_URL;
+const accessToken = localStorage.getItem("access_token");
+const refreshToken = localStorage.getItem("refresh_token");
 
 const AddSchedule = () => {
   // ✅ 일정 관련 상태 관리
@@ -124,10 +127,7 @@ const AddSchedule = () => {
       setLoading(true);
       setError("");
 
-      // `localStorage`에서 `token` 정보를 가져옵니다.
-      const token = localStorage.getItem("token");
-
-      if (!token) {
+      if (!accessToken) {
         alert("로그인 상태가 아닙니다.");
         setLoading(false);
         return;
@@ -147,7 +147,9 @@ const AddSchedule = () => {
           task,
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Authorization 헤더에 JWT 토큰 포함
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+              "X-Refresh-Token": refreshToken,
             },
           }
         );

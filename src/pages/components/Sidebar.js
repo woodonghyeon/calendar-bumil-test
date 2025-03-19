@@ -13,7 +13,12 @@ import {
 } from "react-icons/fa";
 import "./Sidebar.css";
 
-const Sidebar = ({ user = {id: "", name: "", position: "", department: "", role_id: ""} }) => {
+import "../../utils/useAuth";
+import { useAuth } from "../../utils/useAuth";
+
+const Sidebar = ({
+  user = { id: "", name: "", position: "", department: "", role_id: "" },
+}) => {
   const [isOpen, setIsOpen] = useState(window.innerWidth > 1024);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isTablet, setIsTablet] = useState(
@@ -22,7 +27,6 @@ const Sidebar = ({ user = {id: "", name: "", position: "", department: "", role_
   const navigate = useNavigate();
 
   useEffect(() => {
-
     // 화면 크기 변경 감지
     const handleResize = () => {
       if (window.innerWidth > 1024) {
@@ -58,10 +62,7 @@ const Sidebar = ({ user = {id: "", name: "", position: "", department: "", role_
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
+  const { handleLogout } = useAuth();
 
   const handleMyInfoClick = (e) => {
     e.preventDefault();

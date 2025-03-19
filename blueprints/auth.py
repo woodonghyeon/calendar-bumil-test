@@ -1,11 +1,11 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from flask_bcrypt import Bcrypt
 from flask_cors import cross_origin
 from datetime import datetime, timedelta, timezone
 from db import get_db_connection
 from config import SECRET_KEY
 from Cryptodome.Cipher import AES
-import jwt, base64, os, logging
+import jwt, base64, os, logging, uuid
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 bcrypt = Bcrypt()
@@ -65,6 +65,83 @@ def get_client_ip():
     if request.headers.get('X-Forwarded-For'):
         return request.headers.get('X-Forwarded-For').split(',')[0]
     return request.remote_addr
+
+# Access Token 생성 함수
+def create_access_token(user):
+    return jwt.encode(
+        {
+            "user_id": user["id"],
+            "name": user["name"],
+            "role_id": user["role_id"],
+            "updated_by": user["updated_by"], 
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=30)  # 30분 유효
+        },
+        SECRET_KEY,
+        algorithm="HS256"
+    )
+
+# Refresh Token 생성 함수
+def create_refresh_token():
+    return str(uuid.uuid4())  # 랜덤 UUID 생성
+
+# Access_Token 검증 및 갱신 함수
+def verify_and_refresh_token(request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        return None, None, None, jsonify({"message": "Access Token이 없습니다."}), 401
+
+    access_token = auth_header.split(" ")[1]
+
+    try:
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
+        return payload["user_id"], payload["name"], payload["role_id"], None, None
+
+    except jwt.ExpiredSignatureError:
+        refresh_token = request.headers.get('X-Refresh-Token')
+        if not refresh_token:
+            return None, None, None, jsonify({"message": "Refresh Token이 없습니다. 다시 로그인해주세요."}), 401
+
+        user, error = get_user_from_refresh_token(refresh_token)
+        if error:
+            return None, None, None, jsonify({"message": error}), 401
+
+        new_access_token = create_access_token(user)
+        return user["id"], user["name"], user["role_id"], jsonify({"access_token": new_access_token}), 200
+
+    except jwt.InvalidTokenError:
+        return None, None, None, jsonify({"message": "유효하지 않은 Access Token입니다."}), 401
+
+# refresh_token 검증
+def get_user_from_refresh_token(refresh_token):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        sql_select_refresh_token = """
+          SELECT * FROM tb_refresh_token 
+          WHERE refresh_token = %s"""
+        cursor.execute(sql_select_refresh_token, (refresh_token,))
+        logger.info(f"[SQL/SELECT] tb_refresh_token get_user_from_refresh_token() {sql_select_refresh_token}")
+        token_data = cursor.fetchone()
+
+        if not token_data or datetime.now(timezone.utc) > token_data["expires_at"]:
+            return None, "Refresh Token이 만료되었거나 유효하지 않습니다."
+
+        sql_select_tb_user = """
+          SELECT * FROM tb_user WHERE id = %s"""
+        cursor.execute(sql_select_tb_user, (token_data["user_id"],))
+        logger.info(f"[SQL/SELECT] tb_user get_user_from_refresh_token() {sql_select_tb_user}")
+        user = cursor.fetchone()
+        if not user:
+            return None, "사용자 정보를 찾을 수 없습니다."
+
+        return user, None
+    except Exception as e:
+        logger.error(f"get_user_from_refresh_token 오류: {e}")
+        return None, str(e)
+    finally:
+        cursor.close()
+        conn.close()
+
 
 # 회원가입 (AES 암호화 적용)
 # 현재 사용하지 않음.
@@ -161,22 +238,30 @@ def login():
         if not bcrypt.check_password_hash(user['password'], password):
             return jsonify({'message': '잘못된 비밀번호!'}), 401
 
-        # JWT 생성
-        payload = {
-            'user_id': user['id'],
-            'name': user['name'],
-            'role_id': user['role_id'],
-            # 토큰 기간 2주 (임시방편, 수정필요)
-            'exp': datetime.now(timezone.utc) + timedelta(weeks=2)
-        }
-        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+        access_token = create_access_token(user)
+        refresh_token = create_refresh_token()
+
+        expires_at = datetime.now(timezone.utc) + timedelta(weeks=2)
+
+        sql_refresh_token = """
+          INSERT INTO tb_refresh_token (user_id, refresh_token, expires_at, user_agent, ip_address) 
+          VALUES (%s, %s, %s, %s, %s) AS new
+          ON DUPLICATE KEY UPDATE 
+          refresh_token = new.refresh_token,
+          expires_at = new.expires_at"""
+        cursor.execute(sql_refresh_token, (user["id"], refresh_token, expires_at, request.user_agent.string, request.remote_addr))
+        logger.info(f"[SQL/INSERT] tb_refresh_token /login{sql_refresh_token}")
+
+        conn.commit()
 
         user_data = {
             'id': user['id'],
             'first_login_yn': user.get('first_login_yn', 'Y')
         }
 
-        return jsonify({'message': '로그인 성공!', 'user': user_data, 'token': token}), 200
+        response = make_response(jsonify({'message': '로그인 성공!', 'user': user_data, 'access_token': access_token, 'refresh_token': refresh_token}), 200)
+
+        return response
 
     except Exception as e:
         print(f"로그인 중 오류 발생: {e}")
@@ -187,27 +272,60 @@ def login():
         if conn is not None:
             conn.close()
 
+@auth_bp.route('/refresh_token', methods=['POST', 'OPTIONS'])
+@cross_origin(supports_credentials=True)
+def refresh_token():
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'CORS preflight request success'}), 200
+
+    data = request.get_json() or {}
+    refresh_token = data.get('refresh_token')
+
+    if not refresh_token:
+        return jsonify({"message": "Refresh Token이 필요합니다."}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Refresh Token 유효성 확인 (DB 조회)
+    sql_select_refresh_token = """
+      SELECT * FROM tb_refresh_token 
+      WHERE refresh_token = %s"""
+    cursor.execute(sql_select_refresh_token, (refresh_token,))
+    logger.info(f"[SQL/SELECT] tb_refresh_token /refresh_token{sql_select_refresh_token}")
+    token_data = cursor.fetchone()
+
+    if not token_data :
+        return jsonify({"message": "유효하지 않은 Refresh Token입니다."}), 401
+    
+    if datetime.now(timezone.utc) > token_data["expires_at"]:
+        return jsonify({"message": "Refresh Token이 만료되었습니다. 다시 로그인하세요."}), 401
+
+    # 기존 방식대로 새로운 Access Token 생성
+    sql_select_access_token = """
+      SELECT * FROM tb_user WHERE id = %s"""
+    cursor.execute(sql_select_access_token, (token_data["user_id"],))
+    logger.info(f"[SQL/SELECT] tb_refresh_token /refresh_token{sql_select_access_token}")
+    
+    user = cursor.fetchone()
+    new_access_token = create_access_token(user)
+
+    return jsonify({"access_token": new_access_token}), 200
+
 # 로그인 기록 저장 API
 @auth_bp.route('/log_login', methods=['POST', 'OPTIONS'])
 @cross_origin(supports_credentials=True)
 def log_login():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    # 토큰 검증
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user_id = payload.get('user_id')
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
-    except Exception as e:
-        return jsonify({'message': '토큰 검증 오류'}), 401
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
     
     conn = None
     cursor = None
@@ -242,37 +360,55 @@ def log_login():
         if conn is not None:
             conn.close()
 
+# 로그아웃 API (refresh token 삭제)
+@auth_bp.route('/logout', methods=['POST', 'OPTIONS'])
+@cross_origin(supports_credentials=True)
+def logout():
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'CORS preflight request success'}), 200
+    
+    data = request.get_json() or {}
+    refresh_token = data.get('refresh_token')
+
+    if not refresh_token:
+        return jsonify({"message": "Refresh Token이 필요합니다."}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # Refresh Token 삭제
+    sql_delete_refresh_token = """
+      DELETE FROM tb_refresh_token 
+      WHERE refresh_token = %s"""
+    cursor.execute(sql_delete_refresh_token, (refresh_token,))
+    logger.info(f"[SQL/DELETE] tb_refresh_token {sql_delete_refresh_token}")
+    
+    conn.commit()
+
+    response = make_response(jsonify({"message": "로그아웃 성공!"}), 200)
+    return response
+
 # 로그인 기록 조회 API
 @auth_bp.route('/get_login_logs', methods=['GET', 'OPTIONS'])
 @cross_origin(supports_credentials=True)
 def get_login_logs():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({'message': '데이터베이스 연결 실패!'}), 500
 
-    # 토큰 검증
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
+    cursor = conn.cursor(dictionary=True)
+    
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user_id = payload.get('user_id')
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
-    except Exception as e:
-        return jsonify({'message': '토큰 검증 오류'}), 401
-
-    conn = None
-    cursor = None
-    try:
-        conn = get_db_connection()
-        if conn is None:
-            return jsonify({'message': '데이터베이스 연결 실패!'}), 500
-
-        cursor = conn.cursor(dictionary=True)
-        
         # 로그인 기록 조회 쿼리
         sql_select_logs = """
         SELECT log.login_at, log.user_id, log.ip_address, user.name, user.department
@@ -287,29 +423,28 @@ def get_login_logs():
         return jsonify({'message': '로그인 기록 조회 성공', 'logs': logs}), 200
 
     except Exception as e:
-        print(f"로그인 기록 조회 오류: {e}")
+        logger.error(f"로그인 기록 조회 오류: {e}")
         return jsonify({'message': '로그인 기록 조회 실패!'}), 500
     finally:
-        if cursor is not None:
-            cursor.close()
-        if conn is not None:
-            conn.close()
+        cursor.close()
+        conn.close()
+
 
 @auth_bp.route('/get_logged_in_user', methods=['GET', 'OPTIONS'])
 @cross_origin(supports_credentials=True)
 def get_logged_in_user():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
-
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user_id = payload['user_id']
-        
         conn = get_db_connection()
         if conn is None:
             return jsonify({'message': '데이터베이스 연결 실패!'}), 500
@@ -353,22 +488,15 @@ def get_logged_in_user():
 @auth_bp.route('/change_password', methods=['PUT', 'OPTIONS'])
 def change_password():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    # 토큰 검증
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user_id = payload.get('user_id')
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
-    except Exception as e:
-        return jsonify({'message': '토큰 검증 오류'}), 401
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
 
     # 요청 데이터에서 old_password와 new_password 추출
     data = request.get_json() or {}
@@ -382,10 +510,11 @@ def change_password():
     if conn is None:
         return jsonify({'message': '데이터베이스 연결 실패!'}), 500
     cursor = conn.cursor(dictionary=True)
+
     try:
-        # 현재 유저의 비밀번호와 first_login_yn 확인
+        # 현재 유저의 비밀번호 확인
         sql_tb_user_select = """
-            SELECT password, first_login_yn 
+            SELECT password, first_login_yn, name
             FROM tb_user 
             WHERE id = %s AND is_delete_yn = 'N'"""
         cursor.execute(sql_tb_user_select, (user_id,))
@@ -402,19 +531,20 @@ def change_password():
         # 새 비밀번호를 bcrypt로 해싱
         new_hashed = bcrypt.generate_password_hash(new_password).decode('utf-8')
 
-        # 비밀번호를 업데이트하고 first_login_yn을 'y'로 변경 (비밀번호 변경 완료)
+        # 비밀번호를 업데이트하고 first_login_yn을 'Y'로 변경
         sql_tb_user_update = """
             UPDATE tb_user 
             SET password = %s, first_login_yn = 'Y', updated_at = NOW(), updated_by = %s 
             WHERE id = %s"""
-        cursor.execute(sql_tb_user_update, (new_hashed, payload.get('name', 'SYSTEM'), user_id))
+        cursor.execute(sql_tb_user_update, (new_hashed, user["name"], user_id))
         logger.info(f"[SQL/UPDATE] tb_user /change_password{sql_tb_user_update}")
 
         conn.commit()
         return jsonify({'message': '비밀번호가 성공적으로 변경되었습니다.'}), 200
+
     except Exception as e:
         conn.rollback()
-        print(f"비밀번호 변경 오류: {e}")
+        logger.error(f"비밀번호 변경 오류: {e}")
         return jsonify({'message': f'비밀번호 변경 중 오류 발생: {e}'}), 500
     finally:
         cursor.close()

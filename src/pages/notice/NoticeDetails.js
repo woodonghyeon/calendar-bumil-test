@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar";
 import { useParams } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 const NoticeDetails = () => {
   const [loading, setLoading] = useState(true); // 데이터 로딩 상태
@@ -12,6 +13,9 @@ const NoticeDetails = () => {
   const [notice, setNotice] = useState(null);
 
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
+
   const navigate = useNavigate();
 
   const { id } = useParams();
@@ -54,12 +58,12 @@ const NoticeDetails = () => {
   const fetchNotice = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${apiUrl}/notice/get_notice/${id}`, {
+      const response = await authFetch(`${apiUrl}/notice/get_notice/${id}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
         },
       });
 
@@ -82,12 +86,12 @@ const NoticeDetails = () => {
     );
     if (!confirmDelete) return;
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${apiUrl}/notice/delete_notice/${id}`, {
+      const response = await authFetch(`${apiUrl}/notice/delete_notice/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
         },
         body: JSON.stringify({ updated_by: user.id }),
       });

@@ -2,7 +2,8 @@ from flask import Blueprint, request, jsonify
 import jwt, logging
 from db import get_db_connection
 from config import SECRET_KEY
-from .auth import decrypt_aes, decrypt_deterministic, encrypt_deterministic  # 이메일 복호화 함수
+from blueprints.auth import decrypt_aes, decrypt_deterministic, encrypt_deterministic  # 이메일 복호화 함수
+from blueprints.auth import verify_and_refresh_token
 
 favorite_bp = Blueprint('favorite', __name__, url_prefix='/favorite')
 logger = logging.getLogger(__name__)
@@ -12,6 +13,15 @@ logger.setLevel(logging.INFO)
 def toggle_favorite():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     try:
         data = request.get_json()
         # 클라이언트에서 전달받은 값
@@ -62,6 +72,15 @@ def toggle_favorite():
 def get_favorites():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     try:
         user_id = request.args.get('user_id')
         conn = get_db_connection()
@@ -71,11 +90,23 @@ def get_favorites():
         # tb_favorite와 tb_user를 조인하여 필요한 정보를 가져옵니다.
         # 기존의 u.email 대신 u.id를 사용합니다.
         sql = """
-        SELECT u.id, u.name, u.position, u.department, u.phone_number,
-        COALESCE(u.status, 'NULL') AS status
-        FROM tb_favorite f
-        JOIN tb_user u ON f.favorite_user_id = u.id
-        WHERE f.user_id = %s"""
+        SELECT 
+            u.id, 
+            u.name, 
+            u.position, 
+            d.dpr_nm AS department_name, 
+            d.team_nm AS team_name, 
+            u.phone_number,
+            COALESCE(u.status, 'NULL') AS status
+        FROM 
+            tb_favorite f
+        JOIN 
+            tb_user u ON f.favorite_user_id = u.id
+        LEFT JOIN 
+            tb_department d ON u.department = d.dpr_id
+        WHERE 
+            f.user_id = %s"""
+
         cursor.execute(sql, (user_id,))
         logger.info(f"[SQL/SELECT] tb_favorite, tb_user /get_favorites{sql}")
         favorites = cursor.fetchall()

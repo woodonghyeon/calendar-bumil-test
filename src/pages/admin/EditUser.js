@@ -3,11 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import "./EditUser.css";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 const EditUser = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
 
   // decodedUserId를 state로 저장
   const [decodedUserId, setDecodedUserId] = useState(null);
@@ -22,8 +25,14 @@ const EditUser = () => {
     role_id: "",
   });
 
-  const [loading, setLoading] = useState(true); // 데이터 로딩 상태 관리 (true: 로딩 중) 
-  const [user, setUser] = useState({id: "", name: "", position: "", department: "", role_id: ""}); //로그인한 사용자 정보
+  const [loading, setLoading] = useState(true); // 데이터 로딩 상태 관리 (true: 로딩 중)
+  const [user, setUser] = useState({
+    id: "",
+    name: "",
+    position: "",
+    department: "",
+    role_id: "",
+  }); //로그인한 사용자 정보
   const { getUserInfo, checkAuth, handleLogout } = useAuth();
 
   // 로그인한 사용자 정보 가져오기 및 권한 확인 후 권한 없으면 로그아웃 시키기
@@ -31,7 +40,7 @@ const EditUser = () => {
     const fetchUserInfo = async () => {
       const userInfo = await getUserInfo();
       setUser(userInfo);
-      
+
       const isAuthorized = checkAuth(userInfo?.role_id, ["AD_ADMIN"]); // 권한 확인하고 맞으면 true, 아니면 false 반환
       if (!isAuthorized) {
         console.error("관리자 권한이 없습니다.");
@@ -39,7 +48,7 @@ const EditUser = () => {
         return;
       }
       setLoading(false); // 로딩 완료
-    };  
+    };
     fetchUserInfo();
   }, []);
 
@@ -60,12 +69,20 @@ const EditUser = () => {
     // API 호출
     const fetchData = async () => {
       try {
-        const deptRes = await fetch(
-          `${process.env.REACT_APP_API_URL}/admin/get_department_list`
+        const deptRes = await authFetch(
+          `${apiUrl}/department/get_department_list`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+              "X-Refresh-Token": refreshToken,
+            },
+          }
         );
-        const roleRes = await fetch(
-          `${process.env.REACT_APP_API_URL}/admin/get_role_list`
-        );
+        if (!deptRes.ok) throw new Error("부서 목록을 가져오지 못했습니다.");
+
+        const roleRes = await authFetch(`${apiUrl}/admin/get_role_list`);
 
         const deptData = await deptRes.json();
         const roleData = await roleRes.json();
@@ -73,7 +90,11 @@ const EditUser = () => {
         //console.log("부서 데이터:", deptData);
         //console.log("권한 데이터:", roleData);
 
-        setDepartments(Array.isArray(deptData) ? deptData : []);
+        if (deptData.departments && Array.isArray(deptData.departments)) {
+          setDepartments(deptData.departments);
+        } else {
+          setDepartments([]);
+        }
         setRoles(Array.isArray(roleData) ? roleData : []);
       } catch (error) {
         console.error("데이터 불러오기 오류:", error);
@@ -104,8 +125,8 @@ const EditUser = () => {
     "대표이사",
     "부사장",
     "본부장",
-    "이사",
     "상무",
+    "이사",
     "팀장",
     "부장",
     "차장",
@@ -119,12 +140,15 @@ const EditUser = () => {
     if (!decodedId) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
+      const response = await authFetch(
         `${apiUrl}/user/get_user?user_id=${decodedId}`,
         {
           method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
+          },
         }
       );
 
@@ -166,12 +190,12 @@ const EditUser = () => {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${apiUrl}/admin/update_user`, {
+      const response = await authFetch(`${apiUrl}/admin/update_user`, {
         method: "PUT",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
         },
         body: JSON.stringify({
           id: decodedUserId,
@@ -226,8 +250,10 @@ const EditUser = () => {
             >
               <option value="">부서를 선택하세요</option>
               {departments.map((dept, index) => (
-                <option key={index} value={dept}>
-                  {dept}
+                <option key={index} value={dept.dpr_id}>
+                  {dept.team_nm
+                    ? `${dept.dpr_nm} - ${dept.team_nm}`
+                    : dept.dpr_nm}
                 </option>
               ))}
             </select>

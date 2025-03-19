@@ -2,7 +2,8 @@ from flask import Blueprint, request, jsonify
 import jwt, logging
 from db import get_db_connection
 from config import SECRET_KEY
-from .auth import decrypt_deterministic  # 이메일 복호화 함수
+from blueprints.auth import decrypt_deterministic  # 이메일 복호화 함수
+from blueprints.auth import verify_and_refresh_token
 
 schedule_bp = Blueprint('schedule', __name__, url_prefix='/schedule')
 logger = logging.getLogger(__name__)
@@ -12,7 +13,15 @@ logger.setLevel(logging.INFO)
 def get_schedule():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
-    user_id = request.args.get('user_id')
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     date = request.args.get('date')
     try:
         conn = get_db_connection()
@@ -43,24 +52,13 @@ def get_other_users_schedule():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
     
-    # 토큰에서 현재 사용자의 암호화된 ID 추출
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        # 현재 사용자 ID (암호화된 값) 그대로 사용
-        current_user_id = payload.get('user_id') or payload.get('id')
-        if not current_user_id:
-            return jsonify({'message': '현재 사용자 ID 정보가 없습니다.'}), 400
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
-    except Exception as e:
-        print(f"토큰 검증 오류: {e}")
-        return jsonify({'message': '토큰 검증 오류'}), 401
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
 
     date = request.args.get('date')
     if not date:
@@ -82,9 +80,9 @@ def get_other_users_schedule():
 
         schedules = cursor.fetchall()
         
-        # 현재 사용자의 일정은 제외 (암호화된 ID끼리 직접 비교)
-        filtered_schedules = [sched for sched in schedules if sched['user_id'] != current_user_id]
-                
+        # 현재 사용자의 일정은 제외
+        filtered_schedules = [sched for sched in schedules if sched['user_id'] != user_id]
+
         return jsonify({'schedules': filtered_schedules}), 200
     except Exception as e:
         print(f"다른 사용자 일정 가져오기 오류: {e}")
@@ -101,19 +99,13 @@ def add_schedule():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
     
-    # 토큰 검증
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user_id_from_token = payload['user_id']
-        user_name = payload.get('name', 'Unknown')
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
 
     try:
         data = request.get_json()
@@ -121,7 +113,6 @@ def add_schedule():
         end_date = data.get('end')
         task = data.get('task')
         status = data.get('status')
-        user_id = user_id_from_token
 
         conn = get_db_connection()
         if conn is None:
@@ -152,18 +143,13 @@ def edit_schedule(schedule_id):
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
     
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user_id_from_token = payload['user_id']
-        user_name = payload.get('name', 'Unknown')
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
 
     try:
         data = request.get_json()
@@ -182,7 +168,7 @@ def edit_schedule(schedule_id):
         logger.info(f"[SQL/SELECT] tb_schedule /edit-schedule{sql_user_id_select}")
 
         schedule_owner = cursor.fetchone()
-        if schedule_owner and schedule_owner[0] != user_id_from_token:
+        if schedule_owner and schedule_owner[0] != user_id:
             return jsonify({'message': '일정을 수정할 권한이 없습니다.'}), 403
         
         sql_schedule_update = """
@@ -214,17 +200,16 @@ def edit_schedule(schedule_id):
 def delete_schedule(schedule_id):
     if request.method == 'OPTIONS':
         return jsonify({'message': 'CORS preflight request success'})
-
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
 
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user_id = payload['user_id']
-        role_id = payload.get('role_id', '')  # role_id 가져오기
-
         conn = get_db_connection()
         if conn is None:
             return jsonify({'message': '데이터베이스 연결 실패!'}), 500
@@ -239,7 +224,8 @@ def delete_schedule(schedule_id):
         schedule_owner = cursor.fetchone()
 
         # 🔹 일정 소유자이거나 `AD_ADMIN`이면 삭제 가능
-        if schedule_owner and (schedule_owner[0] != user_id and role_id != "AD_ADMIN"):
+        ADMIN_ROLES = ['AD_ADMIN']
+        if schedule_owner and (schedule_owner[0] != user_id and role_id not in ADMIN_ROLES):
             return jsonify({'message': '일정을 삭제할 권한이 없습니다.'}), 403
 
         # 삭제 실행
@@ -263,8 +249,19 @@ def delete_schedule(schedule_id):
         except Exception:
             pass
 
-@schedule_bp.route('/get_all_schedule', methods=['GET'])
+@schedule_bp.route('/get_all_schedule', methods=['GET', 'OPTIONS'])
 def get_all_schedule():
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
     try:
         conn = get_db_connection()
         if conn is None:

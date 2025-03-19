@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import "./EditSchedule.css";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 const EditSchedule = () => {
   const { scheduleId } = useParams();
@@ -15,9 +16,18 @@ const EditSchedule = () => {
   const [endDate, setEndDate] = useState("");
   const [status, setStatus] = useState("");
 
-  const [loading, setLoading] = useState(true); // 데이터 로딩 상태 관리 (true: 로딩 중) 
-  const [user, setUser] = useState({id: "", name: "", position: "", department: "", role_id: ""}); //로그인한 사용자 정보
+  const [loading, setLoading] = useState(true); // 데이터 로딩 상태 관리 (true: 로딩 중)
+  const [user, setUser] = useState({
+    id: "",
+    name: "",
+    position: "",
+    department: "",
+    role_id: "",
+  }); //로그인한 사용자 정보
   const { getUserInfo } = useAuth();
+
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
 
   // 로그인한 사용자 정보 가져오기 및 권한 확인 후 권한 없으면 로그아웃 시키기
   useEffect(() => {
@@ -25,7 +35,7 @@ const EditSchedule = () => {
       const userInfo = await getUserInfo();
       setUser(userInfo);
       setLoading(false); // 로딩 완료
-    };  
+    };
     fetchUserInfo();
   }, []);
 
@@ -49,7 +59,7 @@ const EditSchedule = () => {
     const addOneDay = (dateString) => {
       if (!dateString) return "";
       const date = new Date(dateString);
-      date.setDate(date.getDate()); 
+      date.setDate(date.getDate());
       return date.toISOString().split("T")[0]; // YYYY-MM-DD 형식으로 변환
     };
 
@@ -57,7 +67,7 @@ const EditSchedule = () => {
     setEndDate(addOneDay(schedule.end_date));
 
     setStatus(schedule.status || "진행 중");
-  }, [schedule, navigate]); 
+  }, [schedule, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -67,13 +77,14 @@ const EditSchedule = () => {
     const adjustedEndDate = subtractOneDay(endDate);
 
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.REACT_APP_API_URL}/schedule/edit-schedule/${scheduleId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
           },
           body: JSON.stringify({
             task,

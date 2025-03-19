@@ -6,6 +6,7 @@ import "tippy.js/dist/tippy.css";
 import { followCursor } from "tippy.js";
 import "./LoginLogPage.css";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 const LoginLogPage = () => {
   const [logs, setLogs] = useState([]); // 로그인 로그 데이터
@@ -15,6 +16,8 @@ const LoginLogPage = () => {
   const logsPerPage = 10; // 페이지당 표시할 로그 개수
 
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
 
   const [loading, setLoading] = useState(true); // 데이터 로딩 상태 관리 (true: 로딩 중)
   const [user, setUser] = useState({
@@ -50,10 +53,13 @@ const LoginLogPage = () => {
 
   const fetchLoginLogs = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${apiUrl}/auth/get_login_logs`, {
+      const response = await authFetch(`${apiUrl}/auth/get_login_logs`, {
         method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
+        },
       });
 
       if (!response.ok)

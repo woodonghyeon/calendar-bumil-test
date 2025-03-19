@@ -5,6 +5,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "./NoticeEdit.css";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 const NoticeEdit = () => {
   const [loading, setLoading] = useState(true); // 데이터 로딩 상태
@@ -13,6 +14,9 @@ const NoticeEdit = () => {
   const [notice, setNotice] = useState(null);
 
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
+
   const navigate = useNavigate();
 
   const { id } = useParams();
@@ -42,7 +46,7 @@ const NoticeEdit = () => {
 
         //2. 공지사항 가져오기
         await fetchNotices();
-        
+
         //3. 권한 확인
         const isAuthorized = checkAuth(userInfo?.role_id, ["AD_ADMIN"]); // 권한 확인하고 맞으면 true, 아니면 false 반환
         if (!isAuthorized) {
@@ -50,7 +54,6 @@ const NoticeEdit = () => {
           handleLogout();
           return;
         }
-
       } catch (error) {
         console.error("데이터 로딩 오류:", error);
       }
@@ -80,12 +83,12 @@ const NoticeEdit = () => {
   const fetchNotices = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${apiUrl}/notice/get_notice/${id}`, {
+      const response = await authFetch(`${apiUrl}/notice/get_notice/${id}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
+          "X-Refresh-Token": refreshToken,
         },
       });
 
@@ -122,12 +125,12 @@ const NoticeEdit = () => {
 
   const updateNotice = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${apiUrl}/notice/update_notice/${id}`, {
+      const response = await authFetch(`${apiUrl}/notice/update_notice/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
         },
         body: JSON.stringify(formData),
       });
@@ -145,16 +148,16 @@ const NoticeEdit = () => {
 
   const createNotice = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
+      if (!accessToken) {
         throw new Error("로그인이 필요합니다.");
       }
 
-      const response = await fetch(`${apiUrl}/notice/create_notice`, {
+      const response = await authFetch(`${apiUrl}/notice/create_notice`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
         },
         body: JSON.stringify(formData),
       });
@@ -198,7 +201,7 @@ const NoticeEdit = () => {
 
   return (
     <div>
-      <Sidebar user={user}/>
+      <Sidebar user={user} />
       <div className="notice-create-container">
         <h2>공지사항 수정</h2>
 

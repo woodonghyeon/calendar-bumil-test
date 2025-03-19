@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 import Sidebar from "../components/Sidebar";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
@@ -14,6 +15,9 @@ const ManageUser = () => {
 
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
+
   const [loading, setLoading] = useState(true); // 데이터 로딩 상태 관리 (true: 로딩 중)
   const [user, setUser] = useState({
     id: "",
@@ -49,7 +53,14 @@ const ManageUser = () => {
   // 사용자 목록 가져오는 함수
   const fetchEmployees = async () => {
     try {
-      const response = await fetch(`${apiUrl}/user/get_users`);
+      const response = await authFetch(`${apiUrl}/user/get_users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
+        },
+      });
       if (!response.ok)
         throw new Error("유저 데이터를 가져오는 데 실패했습니다.");
 
@@ -122,14 +133,14 @@ const ManageUser = () => {
     if (!window.confirm("정말 이 유저를 삭제하시겠습니까?")) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
+      const response = await authFetch(
         `${apiUrl}/admin/delete_user/${employeeId}`,
         {
-          method: "DELETE",
+          method: "PUT",
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
           },
         }
       );
@@ -177,8 +188,15 @@ const ManageUser = () => {
 
   const filterEmployees = (emp) => {
     if (!searchText) return true;
-    const value = emp[searchField]?.toLowerCase() || "";
-    return value.includes(searchText.toLowerCase());
+
+    let value = "";
+    if (searchField === "department") {
+      value = emp.full_department?.toLowerCase() || "";
+    } else {
+      value = emp[searchField]?.toLowerCase() || "";
+    }
+
+    return value.includes(searchText.trim().toLowerCase());
   };
 
   // 검색 필드 한글 매핑
@@ -214,7 +232,7 @@ const ManageUser = () => {
               type="text"
               className="manage-user-search-input"
               placeholder={`${searchFieldLabelMap[searchField]}를 입력하세요.`}
-              onChange={(e) => setSearchText(e.target.value.trim())}
+              onChange={(e) => setSearchText(e.target.value)}
               value={searchText}
             />
           </div>

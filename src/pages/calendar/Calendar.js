@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import Tippy from "@tippyjs/react";
@@ -29,6 +30,9 @@ const Calendar = () => {
     role_id: "",
   }); //로그인한 사용자 정보
   const { getUserInfo } = useAuth();
+
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
 
   // 전체 데이터 가져오기
   useEffect(() => {
@@ -67,8 +71,14 @@ const Calendar = () => {
   // 부서 및 사용자 정보 가져오는 함수
   const fetchUsers = async () => {
     try {
-      const usersResponse = await fetch(
-        `${process.env.REACT_APP_API_URL}/user/get_users`
+      const usersResponse = await authFetch(
+        `${process.env.REACT_APP_API_URL}/user/get_users`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
+          },
+        }
       );
       if (!usersResponse.ok)
         throw new Error("직원 목록을 불러오지 못했습니다.");
@@ -97,8 +107,14 @@ const Calendar = () => {
   // 로그인한 사용자의 상태 가져오기
   const fetchStatusList = async () => {
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/status/get_status_list`
+      const response = await authFetch(
+        `${process.env.REACT_APP_API_URL}/status/get_status_list`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
+          },
+        }
       );
       if (!response.ok) throw new Error("상태 목록을 불러오지 못했습니다.");
       const data = await response.json();
@@ -111,8 +127,14 @@ const Calendar = () => {
   // 로그인한 사용자의 일정 가져오기
   const fetchUserSchedule = async (userId = user.id) => {
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/schedule/get_all_schedule`
+      const response = await authFetch(
+        `${process.env.REACT_APP_API_URL}/schedule/get_all_schedule`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
+          },
+        }
       );
       if (!response.ok) throw new Error("전체 일정을 불러오지 못했습니다.");
       const data = await response.json();
@@ -204,9 +226,7 @@ const Calendar = () => {
 
   // 일정 삭제
   const handleDeleteSchedule = async (scheduleId) => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
+    if (!accessToken) {
       alert("❌ 인증 토큰이 없습니다. 다시 로그인해주세요.");
       return;
     }
@@ -218,13 +238,14 @@ const Calendar = () => {
     //console.log("🔹 Authorization 헤더:", `Bearer ${token}`);
 
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.REACT_APP_API_URL}/schedule/delete-schedule/${scheduleId}`,
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
           },
         }
       );
@@ -234,7 +255,8 @@ const Calendar = () => {
 
       if (response.ok) {
         alert("✅ 일정이 삭제되었습니다.");
-        handleDateClick(selectedDate.getDate());
+        // handleDateClick(selectedDate.getDate()); // 삭제 후 새로고침 (기존)
+        await fetchUserSchedule(user.id); // 삭제 후 새로고침
       } else {
         alert(`⚠️ 삭제 실패: ${data.message}`);
       }
@@ -253,13 +275,14 @@ const Calendar = () => {
     const newStatus = e.target.value;
     setUserStatus(newStatus);
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.REACT_APP_API_URL}/status/update_status`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
           },
           body: JSON.stringify({ status: newStatus }),
         }
@@ -279,11 +302,7 @@ const Calendar = () => {
     }
   };
 
-  const handleLogout = () => {
-    alert("세션이 만료되었습니다. 다시 로그인해주세요.");
-    localStorage.removeItem("token");
-    navigate("/");
-  };
+  const { handleLogout } = useAuth();
 
   // 오늘 날짜와 비교하여 색을 구분하기 위한 함수
   const isToday = (day) => {

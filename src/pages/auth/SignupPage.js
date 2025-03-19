@@ -96,7 +96,7 @@ const SignupPage = () => {
     if (!validateForm()) return;
 
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.REACT_APP_API_URL}/auth/signup`,
         {
           method: "POST",

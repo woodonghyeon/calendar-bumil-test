@@ -6,6 +6,7 @@ import AddProjectButton from "./AddProjectButton";
 import ScrollToTopButton from "../components/ScrollToTopButton";
 import "./ProjectPage.css";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 /**
  * 📌 ProjectPage - 프로젝트 목록을 조회하고 필터링하는 페이지
  *
@@ -40,6 +41,9 @@ const ProjectPage = () => {
 
   // 환경 변수에서 API URL 가져오기
   const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
+
   const [user, setUser] = useState({
     id: "",
     name: "",
@@ -78,7 +82,13 @@ const ProjectPage = () => {
   // 🔹 [2] 사용자 목록 조회
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${apiUrl}/user/get_users`);
+      const response = await authFetch(`${apiUrl}/user/get_users`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
+        },
+      });
       if (!response.ok) throw new Error("사용자 데이터를 불러오지 못했습니다.");
       const data = await response.json();
       setUsers(data.users);
@@ -99,7 +109,14 @@ const ProjectPage = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch(`${apiUrl}/project/get_all_project`);
+        const response = await authFetch(`${apiUrl}/project/get_all_project`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
+          },
+        });
+
         if (!response.ok)
           throw new Error("프로젝트 데이터를 불러오지 못했습니다.");
         const data = await response.json();

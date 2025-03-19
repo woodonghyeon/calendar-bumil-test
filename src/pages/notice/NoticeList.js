@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { FaPlus } from "react-icons/fa";
 import { IoSearchOutline } from "react-icons/io5";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 import AddNoticeButton from "./AddNoticeButton";
 
 /**
@@ -35,6 +36,9 @@ const NoticeList = () => {
   const noticesPerPage = 10;
 
   const apiUrl = process.env.REACT_APP_API_URL;
+
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
   const navigate = useNavigate();
 
   //로그인한 사용자 정보
@@ -76,12 +80,12 @@ const NoticeList = () => {
   const fetchNotices = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${apiUrl}/notice/get_notice_list`, {
+      const response = await authFetch(`${apiUrl}/notice/get_notice_list`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
+          "X-Refresh-Token": refreshToken,
         },
       });
 
@@ -178,7 +182,7 @@ const NoticeList = () => {
               type="text"
               className="notice-search-input"
               placeholder={`${searchFieldLabelMap[searchField]}를 입력하세요.`}
-              onChange={(e) => setSearchText(e.target.value.trim())}
+              onChange={(e) => setSearchText(e.target.value)}
               value={searchText}
             />
           </div>

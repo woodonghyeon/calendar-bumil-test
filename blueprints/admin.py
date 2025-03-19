@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 from db import get_db_connection
 from config import SECRET_KEY
 from .auth import encrypt_deterministic, encrypt_aes
+from blueprints.auth import verify_and_refresh_token
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 bcrypt = Bcrypt()
@@ -14,21 +15,18 @@ logger.setLevel(logging.INFO)
 @admin_bp.route('/add_user', methods=['POST', 'OPTIONS'])
 def create_user():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        created_by = payload.get('name', 'SYSTEM')
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
-    except Exception as e:
-        return jsonify({'message': '토큰 검증 오류'}), 401
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
+    created_by = user_name or 'SYSTEM'
+    updated_by = user_name or 'SYSTEM'
 
     data = request.get_json() or {}
     # 필수 항목 확인
@@ -85,7 +83,7 @@ def create_user():
         INSERT INTO tb_user 
         (name, position, department, id, phone_number, password, role_id, status, first_login_yn, created_at, updated_at, created_by, updated_by)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW(), %s, %s)"""
-        values = (name, position, department, id, phone, hashed_password, role_id, status, first_login_yn, created_by, created_by)
+        values = (name, position, department, id, phone, hashed_password, role_id, status, first_login_yn, created_by, updated_by)
         cursor.execute(sql_tb_user_insert, values)
         logger.info(f"[SQL/INSERT] tb_user /add_user {sql_tb_user_insert}")
 
@@ -103,21 +101,17 @@ def create_user():
 @admin_bp.route('/update_user', methods=['PUT', 'OPTIONS'])
 def update_user():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
 
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        updated_by = payload.get('name', 'SYSTEM')
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
-    except Exception as e:
-        return jsonify({'message': '토큰 검증 오류'}), 401
+    updated_by = user_name or 'SYSTEM'
 
     data = request.get_json() or {}
     if not data.get('id'):
@@ -189,23 +183,18 @@ def update_user():
 
 
 # 유저 삭제 API (논리 삭제)
-@admin_bp.route('/delete_user/<string:user_id>', methods=['DELETE', 'OPTIONS'])
+@admin_bp.route('/delete_user/<string:user_id>', methods=['PUT', 'OPTIONS'])
 def delete_user(user_id):
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
-    try:
-        jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
-    except Exception as e:
-        return jsonify({'message': '토큰 검증 오류'}), 401
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
 
     conn = get_db_connection()
     if conn is None:
@@ -233,26 +222,22 @@ def delete_user(user_id):
 @admin_bp.route('/update_role_id', methods=['PUT', 'OPTIONS'])
 def update_role_id():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight reques t success'}), 200
-
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        updated_by = payload.get('name', 'SYSTEM')
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': '토큰이 만료되었습니다.'}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({'message': '유효하지 않은 토큰입니다.'}), 401
-    except Exception as e:
-        return jsonify({'message': '토큰 검증 오류'}), 401
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
 
     data = request.get_json() or {}
     if not data.get('id'):
         return jsonify({'message': '유저 id가 제공되지 않았습니다.'}), 400
+    
     user_id = data.get('id')
+    updated_by = user_name or 'SYSTEM'
 
     fields = []
     values = []
@@ -342,17 +327,19 @@ def get_unique_position():
 @admin_bp.route('/update_status_admin', methods=['PUT', 'OPTIONS'])
 def update_status_admin():
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'CORS preflight request success'}), 200
-
-    token = request.headers.get('Authorization')
-    if not token:
-        return jsonify({'message': '토큰이 없습니다.'}), 401
-    token = token.split(" ")[1]
+        return jsonify({'message': 'CORS preflight request success'})
+    
+    # verify_and_refresh_token 사용하여 토큰 검증 및 자동 갱신
+    user_id, user_name, role_id, refresh_response, status_code = verify_and_refresh_token(request)
+    if refresh_response:
+        return refresh_response, status_code  # 자동 토큰 갱신 응답 반환
+    
+    if user_id is None:
+        return jsonify({'message': '토큰 인증 실패'}), 401
+    
+    requester_user_id = user_id
 
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        requester_user_id = payload['user_id']
-
         conn = get_db_connection()
         if conn is None:
             return jsonify({'message': '데이터베이스 연결 실패!'}), 500

@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import BackButton from "../components/BackButton";
 import { FaSearch } from "react-icons/fa";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
 
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
@@ -76,6 +77,9 @@ const SituationControls = () => {
 
   // 환경변수에서 API URL 가져오기
   const apiUrl = process.env.REACT_APP_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
+
   const navigate = useNavigate(); // 페이지 이동을 위한 react-router-dom 훅
 
   const location = useLocation(); // 현재 위치 정보를 위한 react-router-dom 훅
@@ -115,7 +119,14 @@ const SituationControls = () => {
   useEffect(() => {
     const fetchUsersAndProjects = async () => {
       try {
-        const response = await fetch(`${apiUrl}/user/get_users`);
+        const response = await authFetch(`${apiUrl}/user/get_users`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-refresh-token": refreshToken,
+          },
+        });
         if (!response.ok)
           throw new Error("사용자 데이터를 불러오지 못했습니다.");
         const data = await response.json();
@@ -127,7 +138,14 @@ const SituationControls = () => {
 
     const fetchProjects = async () => {
       try {
-        const response = await fetch(`${apiUrl}/project/get_all_project`);
+        const response = await authFetch(`${apiUrl}/project/get_all_project`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "X-refresh-token": refreshToken,
+          },
+        });
         if (!response.ok)
           throw new Error("프로젝트 데이터를 불러오지 못했습니다.");
         const data = await response.json();
@@ -144,8 +162,7 @@ const SituationControls = () => {
   // ===== API 호출: 선택된 사용자들(effectiveUsers)의 프로젝트 데이터 가져오기 =====
   useEffect(() => {
     const fetchUserProjectData = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
+      if (!accessToken) {
         setError("로그인이 필요합니다.");
         setLoading(false);
         return;
@@ -162,13 +179,14 @@ const SituationControls = () => {
       //console.log("🔄 effectiveUsers 요청:",effectiveUsers.map((u) => u.id));
 
       try {
-        const response = await fetch(
+        const response = await authFetch(
           `${apiUrl}/project/get_users_and_projects`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${accessToken}`,
+              "X-refresh-token": refreshToken,
             },
             body: JSON.stringify({
               user_ids: effectiveUsers.map((user) => user.id), // ✅ 한 번에 여러 사용자 조회 요청

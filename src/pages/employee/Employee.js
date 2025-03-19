@@ -4,6 +4,8 @@ import Sidebar from "../components/Sidebar";
 import BackButton from "../components/BackButton";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../utils/useAuth";
+import { authFetch } from "../../utils/authFetch";
+
 /**
  * 📌 EmployeeList - 사원 목록을 조회하고 필터링하는 페이지
  *
@@ -47,6 +49,8 @@ const EmployeeList = () => {
 
   const navigate = useNavigate(); // 페이지 이동 훅
   const apiUrl = process.env.REACT_APP_API_URL; // API URL 환경 변수
+  const accessToken = localStorage.getItem("access_token"); // 로컬 스토리지에 저장된 토큰
+  const refreshToken = localStorage.getItem("refresh_token"); // 로컬 스토리지에 저장된 리프레시 토큰
 
   const statusMap = statusList.reduce((acc, { comment, id }) => {
     acc[comment] = id; // comment를 키로, id를 값으로 설정
@@ -94,7 +98,14 @@ const EmployeeList = () => {
   // 🏷️ **상태 목록 가져오기 (근무 중, 휴가 등)**
   const fetchStatusList = async () => {
     try {
-      const response = await fetch(`${apiUrl}/status/get_status_list`);
+      const response = await authFetch(`${apiUrl}/status/get_status_list`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
+        },
+      });
       if (!response.ok) throw new Error("상태 목록을 불러오지 못했습니다.");
 
       const data = await response.json();
@@ -107,23 +118,22 @@ const EmployeeList = () => {
   // ⭐ **즐겨찾기 목록 가져오기**
   const fetchFavorites = async (userId) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${apiUrl}/favorite/get_favorites?user_id=${userId}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${accessToken}`,
+            "X-Refresh-Token": refreshToken,
           },
         }
       );
-
       if (!response.ok)
         throw new Error("즐겨찾기 목록을 가져오는 데 실패했습니다.");
 
       const data = await response.json();
       setFavoriteEmployees(data.favorite || []);
-      fetchEmployees(); // 사원 목록 새로고침
     } catch (err) {
       setError(err.message);
     }
@@ -132,7 +142,14 @@ const EmployeeList = () => {
   // 👥 **사원 및 부서 목록 가져오기**
   const fetchEmployees = async () => {
     try {
-      const response = await fetch(`${apiUrl}/user/get_users`);
+      const response = await authFetch(`${apiUrl}/user/get_users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
+        },
+      });
       if (!response.ok)
         throw new Error("사원 데이터를 가져오는 데 실패했습니다.");
 
@@ -162,11 +179,12 @@ const EmployeeList = () => {
     if (!user.id) return;
 
     try {
-      const response = await fetch(`${apiUrl}/favorite/toggle_favorite`, {
+      const response = await authFetch(`${apiUrl}/favorite/toggle_favorite`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
         },
         body: JSON.stringify({
           user_id: user.id,
@@ -185,11 +203,12 @@ const EmployeeList = () => {
   // 🔄 **사원 상태 변경 (관리자만 가능)**
   const handleStatusChange = async (employeeId, newStatus) => {
     try {
-      const response = await fetch(`${apiUrl}/admin/update_status_admin`, {
+      const response = await authFetch(`${apiUrl}/admin/update_status_admin`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken,
         },
         body: JSON.stringify({
           user_id: employeeId,
@@ -298,6 +317,11 @@ const EmployeeList = () => {
     }, {});
   };
 
+  // 부서 목록 렌더링 부분에서 employees 대신 사용
+  // 부서 목록 렌더링 부분에서 employees 대신 필터링된 데이터를 사용
+  const sourceEmployees = showFavorites ? favoriteEmployees : employees;
+  const filteredEmployees = sourceEmployees.filter(filterEmployees);
+
   // ⏳ **로딩 및 에러 처리**
   if (loading) return <p>데이터를 불러오는 중...</p>;
   if (error) return <p>오류 발생: {error}</p>;
@@ -388,25 +412,21 @@ const EmployeeList = () => {
 
           {/* 👥 사원 목록 렌더링 */}
           <ul className="employee-list">
-            {Object.keys(
-              groupByDepartment(showFavorites ? favoriteEmployees : employees)
-            )
+            {Object.keys(groupByDepartment(filteredEmployees))
               .sort((a, b) => a.localeCompare(b, "ko-KR"))
               .map((department) => {
-                const departmentEmployees = groupByDepartment(
-                  showFavorites ? favoriteEmployees : employees
-                )[department];
-
+                const departmentEmployees =
+                  groupByDepartment(filteredEmployees)[department];
                 return (
                   <div key={department}>
                     {/* 부서명 클릭 시 열고 닫을 수 있도록 토글 */}
                     <div
                       className={`department-header ${
-                        allDepartmentsOpen ? "open" : ""
+                        openDepartments[department] ? "open" : ""
                       }`}
-                      onClick={seeAllDepartments}
+                      onClick={() => toggleDepartment(department)}
                       style={{
-                        backgroundColor: allDepartmentsOpen
+                        backgroundColor: openDepartments[department]
                           ? "#f5f5f5"
                           : "white",
                         transition: "background-color 0.3s",
